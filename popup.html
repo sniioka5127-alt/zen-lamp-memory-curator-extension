@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZEN LAMP Memory Curator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="mark">◯</div>
+      <div>
+        <h1>ZEN LAMP<br><span>Memory Curator</span></h1>
+        <p>Turn long AI conversations into usable memory.</p>
+      </div>
+    </header>
+
+    <section class="notice">
+      <strong>Local-only helper.</strong> This extension does not call any AI API or send your text to a server. It only creates a copy-paste prompt.
+    </section>
+
+    <section class="grid two">
+      <label>
+        Prompt depth
+        <select id="depth">
+          <option value="simple">Simple</option>
+          <option value="power">Power User</option>
+        </select>
+      </label>
+      <label>
+        Mode
+        <select id="mode">
+          <option value="initial">INITIAL</option>
+          <option value="update">UPDATE</option>
+        </select>
+      </label>
+    </section>
+
+    <section id="existingMemoryWrap" class="field hidden">
+      <label for="existingMemory">Existing memory</label>
+      <textarea id="existingMemory" placeholder="Paste existing memory here for UPDATE mode."></textarea>
+    </section>
+
+    <section class="field">
+      <div class="label-row">
+        <label for="conversation">Conversation log</label>
+        <button id="grabSelection" type="button" class="small">Use selected text</button>
+      </div>
+      <textarea id="conversation" placeholder="Paste a long AI conversation here, or select text on a page and click 'Use selected text'."></textarea>
+    </section>
+
+    <section class="actions">
+      <button id="generate" type="button" class="primary">Generate prompt</button>
+      <button id="copy" type="button">Copy prompt</button>
+      <button id="save" type="button">Save memory</button>
+      <button id="load" type="button">Load memory</button>
+      <button id="clear" type="button" class="ghost">Clear</button>
+    </section>
+
+    <section class="field">
+      <label for="output">Generated Memory Curator prompt</label>
+      <textarea id="output" placeholder="Your generated prompt will appear here." readonly></textarea>
+    </section>
+
+    <footer>
+      <p><strong>Philosophy:</strong> More memory is not enough. We need memory governance.</p>
+      <p class="muted">ZEN LAMP PROJECT · v0.1.0</p>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
