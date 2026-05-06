@@ -6,7 +6,7 @@ This is an early personal PoC from the ZEN LAMP PROJECT.
 
 ## Screenshot
 
-![ZEN LAMP Memory Curator Extension screenshot](assets/screenshot-extension-en.png)
+<img src="assets/screenshot-extension-en.png" alt="ZEN LAMP Memory Curator Extension screenshot" width="420">
 
 ## What it does
 
