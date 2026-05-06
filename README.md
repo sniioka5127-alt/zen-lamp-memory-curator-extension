@@ -8,6 +8,8 @@ This is an early personal PoC from the ZEN LAMP PROJECT.
 
 <img src="assets/screenshot-extension-en.png" alt="ZEN LAMP Memory Curator Extension screenshot" width="420">
 
+The extension generates prompts only. It does not process the conversation with an AI by itself.
+
 ## What it does
 
 Long AI chats often contain a mix of:
