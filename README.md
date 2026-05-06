@@ -74,11 +74,13 @@ Outputs may include:
 
 ## Installation for Chrome / Edge
 
-1. Download or clone this repository.
-2. Open `chrome://extensions/` or `edge://extensions/`.
-3. Turn on Developer mode.
-4. Click **Load unpacked**.
-5. Select the folder containing `manifest.json`.
+1. Download the latest release from the Releases section.
+2. Download `Source code (zip)`.
+3. Unzip the file.
+4. Open `chrome://extensions/` or `edge://extensions/`.
+5. Turn on Developer mode.
+6. Click **Load unpacked**.
+7. Select the extracted folder containing `manifest.json`.
 
 ## Philosophy
 
