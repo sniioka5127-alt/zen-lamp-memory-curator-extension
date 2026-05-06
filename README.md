@@ -4,6 +4,10 @@ A simple local browser extension for turning long AI conversations into usable m
 
 This is an early personal PoC from the ZEN LAMP PROJECT.
 
+## Screenshot
+
+![ZEN LAMP Memory Curator Extension screenshot](assets/screenshot-extension-en.png)
+
 ## What it does
 
 Long AI chats often contain a mix of:
