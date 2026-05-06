@@ -50,6 +50,8 @@ All text stays in your browser unless you manually copy it into an AI tool.
 
 For everyday use.
 
+Simple mode merges fixed rules, project context, and discoveries into a single **Keep** bucket. Choose **Power User** if you need finer separation.
+
 Outputs:
 
 - Keep
