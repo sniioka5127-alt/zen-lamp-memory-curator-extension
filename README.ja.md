@@ -1,16 +1,14 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。
+長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeも統合しています。
 
-現在のMemory Curator開発版は **MC-01 / v0.2.0** です。
+現在の拡張機能開発版は **MC-01 + CB-06 / v0.3.0** です。
 
 ## 基本思想
 
 目的は、すべてを覚えさせることではありません。
 
 **AIが記憶候補を提案し、人間が何を残すかを決める。**
-
-Memory Curatorは HIRAKU Tools / Human Agency Workspace の「第2の部屋」です。
 
 > 一つの家に、四つの部屋。
 
@@ -20,61 +18,44 @@ Memory Curatorは HIRAKU Tools / Human Agency Workspace の「第2の部屋」�
 - **Roundtable AI** — 比べる
 - **Human Gate** — 決める
 
-## MC-01でできること
+## Room 2 — Memory Curator
 
 1. 長いAI対話を貼り付ける、またはWebページ上の選択テキストを取得する。
-2. **Simple / Power User** と **INITIAL / UPDATE** を選ぶ。
-3. Memory Curatorプロンプトを生成する。
-4. ChatGPT、Claude、Geminiなど任意のAIへコピーする。
-5. AIが返した `context_items` JSONを拡張機能へ戻す。
-6. 各候補を `PROPOSED` ContextItemとしてローカル保存する。
-7. 人間が各候補を **Approve / Reject** し、Memory Policyを選ぶ。
-8. 承認済みContextItemsをJSONとしてコピーできる。
+2. MC-01のMemory Curatorプロンプトを生成する。
+3. AIが返した `context_items` JSONを拡張機能へ戻す。
+4. 各候補を `PROPOSED` ContextItemとしてローカル保存する。
+5. 人間が各候補を **Approve / Reject** し、Memory Policyを決める。
 
-### UPDATEモード
+AI側がJSONに `status` や承認情報を書いても、ContextItemのAuthorityとしては採用しません。
 
-既存Memory欄を空欄にした場合、そのProjectですでにHuman承認済みのローカルContextItemsを自動的に既存Memoryとして利用します。
+## Room 3 — Context Bridge
 
-旧形式のMemoryを持っている場合は、既存Memory欄へ貼り付けて段階移行できます。
+Popupに **Open Context Bridge** を追加し、専用画面からCB-01〜CB-06を一続きで操作できます。
 
-## Human Gate
+Browser Runtimeの流れは、
 
-MC-01では、外部AIが返した内容を自動承認しません。
+`目的指定 → proposal_only候補 → HumanがContextItemを選択 → ContextPackage Human Gate → Exclusion / Redaction Human Gate → Canonical Provider Render → Copy Attempt → Human-confirmed Manual Handoff`
 
-- AI出力 → `proposed`
-- 人間のApprove → `approved`
-- 人間のReject → `rejected`
-- 承認済み内容を変更 → `needs_review`
+です。
 
-AI側がJSONに `status` や承認状態を書いても、Memory CuratorはそれをContextItem承認情報として採用しません。
+Room 3には現在、以下を実装しています。
 
-## MemoryとContextを分離
+- **CB-01** — ContextPackage Schema、Lifecycle、Revision-bound Human Gate、Source Integrity、Freshness確認、Transfer Policy強制。
+- **CB-02** — ローカル・決定論的なContext Selection Engine。順位付けは説明可能で、Authorityは `proposal_only`。
+- **CB-03** — Exclusion / Redaction Layer。Humanが「伏せる／明示的に残す／項目全体を除外」を決定。
+- **CB-04** — Generic / GPT / Claude / Gemini向けCanonical Renderer。同一Semantic Payload / Fingerprintを保持。
+- **CB-05** — Transfer Audit / Outbound Handoff Boundary。`rendered_not_sent`、`attempted_not_confirmed`、Human-confirmed handoffを分離し、Provider側の実受領は `unverified` のまま扱う。
+- **CB-06** — 上記を実ブラウザ画面へ統合するBrowser Runtime。Providerへの自動送信機能は追加しない。
 
-Memory Curatorは「何を残すか」だけを担当します。
-
-旧版にあった **Next Chat Handoff / AI-specific Handoff** はMC-01のPrompt Contractから外しました。
-
-次のAIへ何を渡すかは **Context Bridge** が統治します。
-
-Room 3では現在、5つのCore工程を実装しています。
-
-- **CB-01**：ContextPackage Schema、専用Lifecycle、Revisionに結び付いたHuman Gate、Source Integrity確認、Freshness確認、Transfer Policy強制。
-- **CB-02**：承認済みContextItemsを目的に応じてローカル・決定論的に順位付けするContext Selection Engine。出力は厳格に `proposal_only`。
-- **CB-03**：Exclusion / Redaction Layer。検出結果そのものには権限を持たせず、人間が「伏せる／明示的に残す／項目全体を除外する」を決めて初めてTransferViewを承認できます。
-- **CB-04**：Context Renderer。1つのHuman承認済みTransferViewから Generic / GPT / Claude / Gemini 向けの表示形式を生成しますが、Canonical JSONとSemantic Fingerprintは全Providerで同一に保ちます。
-- **CB-05**：Transfer Audit / Outbound Handoff Boundary。`rendered_not_sent`、`attempted_not_confirmed`、Human-confirmed handoffを明確に分け、Provider側の実受領は `unverified` として扱います。
-
-CB-03のローカル検出は、メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、今回だけ指定する完全一致文字列を補助的に扱います。また、人間が範囲を指定するManual Redactionを用意します。**氏名や意味依存の個人情報を完全に自動判定できるとは扱いません。** Redaction Planには検出した元文字列そのものを複製せず、項目全体を除外した場合もTransferViewへ除外本文をコピーしません。
-
-CB-04ではProviderごとに見た目を変えても、意味内容は変えません。Roundtable向けには、全Providerで同一のCanonical Contextが使われていることを検証します。
-
-CB-05では外部引渡しの直前に、ContextPackage・TransferView・対象Provider・Canonical Payload・Fingerprint・実際のRendered Textを再検証します。Handoff Receiptを作れるのはHuman actorだけです。v0.1は手動引渡しの証跡だけを扱い、Provider APIを呼ばず、Providerが実際に受領したとは断定しません。
+CB-06の任意Session保存は、Project ID、ContextPackage ID、RedactionPlan ID、TransferView ID、画面設定などの**参照情報だけ**を保存し、Canonical JSONやRendered Provider PromptをSession Cacheへ重複保存しません。
 
 ## Local First / Privacy
 
 この拡張機能自身はAI APIを呼び出しません。
 
-会話・ドラフト・ContextItemsは `chrome.storage.local` に保存されます。ユーザー自身がコピーしてAIサービスへ貼り付けるまでは外部AIへ送信されません。
+会話、Draft、ContextItems、CoreのGovernance Recordは `chrome.storage.local` に保存されます。ユーザー自身がコピー／手動引渡しを行うまでは、外部AIへ送信されません。
+
+CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
 
 ## Human Agency Core v0.1
 
@@ -90,8 +71,7 @@ CB-05では外部引渡しの直前に、ContextPackage・TransferView・対象P
 - [`CB-03 Exclusion / Redaction Layer`](docs/CB03_EXCLUSION_REDACTION_v0.1.md)
 - [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
-
-Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、ContextPackage統治、proposal-onlyのContext選択、人間が承認したPrivacy-reduced TransferView、Canonical Provider Rendering、本文を重複保存しないOutbound Handoff Receiptが含まれます。
+- [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -100,6 +80,7 @@ Reference Coreには、Project Store、ContextItem Store、Provenance、Memory /
 3. デベロッパーモードをオンにする。
 4. **Load unpacked** を押す。
 5. `manifest.json` が入っているフォルダを選択する。
+6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
 
 ## テスト
 
@@ -107,7 +88,7 @@ Reference Coreには、Project Store、ContextItem Store、Provenance、Memory /
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Coreを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core、CB-06 Browser Runtime Contractを検証します。
 
 ## ライセンス
 
