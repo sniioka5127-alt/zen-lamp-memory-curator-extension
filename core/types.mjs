@@ -68,6 +68,30 @@ export const HUMAN_REVIEW_STATE = Object.freeze([
   "rejected"
 ]);
 
+// ContextPackage has its own lifecycle because package approval must bind to
+// an exact package revision. It must not reuse ContextItem ENTITY_STATUS.
+export const CONTEXT_PACKAGE_STATUS = Object.freeze([
+  "draft",
+  "pending_review",
+  "approved",
+  "rejected",
+  "revoked",
+  "archived"
+]);
+
+export const CONTEXT_PACKAGE_HUMAN_GATE_STATE = Object.freeze([
+  "pending",
+  "approved",
+  "rejected",
+  "revoked"
+]);
+
+export const CONTEXT_PACKAGE_TARGET_MODE = Object.freeze([
+  "generic",
+  "single",
+  "roundtable"
+]);
+
 export const AUDIT_ACTION = Object.freeze([
   "create",
   "update",
@@ -77,6 +101,8 @@ export const AUDIT_ACTION = Object.freeze([
   "mark_stale",
   "archive",
   "policy_change",
+  "submit_review",
+  "revoke_approval",
   "transfer_attempt",
   "transfer_approved",
   "transfer_denied"
