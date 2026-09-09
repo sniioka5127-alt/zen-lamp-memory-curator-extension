@@ -16,3 +16,4 @@ export * from "./roundtable-response-store.mjs";
 export * from "./roundtable-comparison-engine.mjs";
 export * from "./roundtable-interpretive-extraction.mjs";
 export * from "./roundtable-interpretive-review-store.mjs";
+export * from "./human-decision-record-store.mjs";
