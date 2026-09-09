@@ -1,0 +1,73 @@
+name: E2E-01 One House Browser + Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - e2e-*
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Show browser version
+        run: |
+          if command -v google-chrome-stable >/dev/null 2>&1; then google-chrome-stable --version; \
+          elif command -v google-chrome >/dev/null 2>&1; then google-chrome --version; \
+          elif command -v chromium >/dev/null 2>&1; then chromium --version; \
+          else echo "Chrome/Chromium not found" && exit 1; fi
+      - name: Run real Chromium extension smoke
+        run: xvfb-run -a node scripts/e2e-01-browser-smoke.mjs
+      - name: Upload browser smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-01-browser-report
+          path: artifacts/e2e-01-browser-report.json
+          if-no-files-found: warn
+
+  deployment-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify public Chat Atlas AT-03 deployment
+        id: deployment
+        continue-on-error: true
+        run: node scripts/e2e-01-deployment-verify.mjs
+      - name: Report deployment gate result
+        if: always()
+        run: |
+          echo "### E2E-01 Deployment Verification" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f artifacts/e2e-01-deployment-report.json ]; then
+            node -e 'const r=require("./artifacts/e2e-01-deployment-report.json"); console.log(`Status: **${r.status.toUpperCase()}**`); for (const c of r.checks) console.log(`- ${c.status === "pass" ? "✅" : "❌"} ${c.name}${c.http_status ? ` (HTTP ${c.http_status})` : ""}`)' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Status: **NO REPORT**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "Deployment verification is observational in E2E-01: source PRs are not blocked solely because Hostinger/public deployment has not yet been updated." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload deployment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-01-deployment-report
+          path: artifacts/e2e-01-deployment-report.json
+          if-no-files-found: warn
