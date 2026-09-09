@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence layers.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison layers.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-02 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-03 / v0.3.0**.
 
 ## Principle
 
@@ -86,6 +86,25 @@ If a capture must be corrected, RT-02 creates a new record with `supersedes_resp
 
 Optional CB-05 handoff receipts may strengthen provenance, but `provider_delivery_status` remains `unverified` and provider-origin authenticity remains Human-attested rather than provider-authenticated.
 
+### RT-03 — Response Comparison / Disagreement Matrix
+
+RT-03 compares exactly one intact RT-02 response for every provider in the RT-01 provider set.
+
+Its output is deliberately descriptive:
+
+- `status = compared_not_decided`
+- `authority = descriptive_no_truth_claim`
+- exact normalized wording shared across all selected provider responses
+- provider-unique wording segments as candidates for later review
+- pairwise lexical overlap, exact shared-segment counts, and response-length diagnostics
+- mandatory `interpretive_review.required = true`
+
+RT-03 is local and deterministic. Its lexical analysis uses normal word tokens plus CJK bigrams so Japanese text does not depend on whitespace tokenization.
+
+Exact shared wording means only that equivalent normalized text appears in every response. Pairwise lexical overlap is a diagnostic measure, not semantic agreement, model quality, or factual correctness.
+
+RT-03 never creates `winner`, `decision`, `truth`, `majority_choice`, `model_ranking`, or `recommended_provider` fields. **Majority agreement is not converted into truth or Human authority.**
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -94,7 +113,7 @@ Conversation text, drafts, ContextItems, and Core governance records are stored 
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
-RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed, but its Audit Log entry remains metadata-only and does not duplicate the response body.
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses and does not add a new persistent comparison store in v0.1. Audit Log entries remain metadata-only and do not duplicate provider response bodies.
 
 ## Human Agency Core v0.1
 
@@ -113,6 +132,7 @@ The shared foundation includes:
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 - [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
+- [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -123,7 +143,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
-RT-01 and RT-02 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
+RT-01 through RT-03 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
 
 ## Tests
 
@@ -131,7 +151,7 @@ RT-01 and RT-02 are currently Core contracts; a dedicated Room 4 browser runtime
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 Canonical Context Input, and RT-02 Provider Response Capture / Provenance contracts.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-03 Roundtable contracts.
 
 ## License
 
