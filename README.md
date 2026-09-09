@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison layers.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison / interpretive-proposal layers.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-03 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-04 / v0.3.0**.
 
 ## Principle
 
@@ -105,6 +105,26 @@ Exact shared wording means only that equivalent normalized text appears in every
 
 RT-03 never creates `winner`, `decision`, `truth`, `majority_choice`, `model_ranking`, or `recommended_provider` fields. **Majority agreement is not converted into truth or Human authority.**
 
+### RT-04 — Claim / Assumption / Conflict Extraction
+
+RT-04 is the first interpretive layer, but it still produces **proposals only**.
+
+It builds a governed extraction prompt from the exact RT-01 / RT-02 / RT-03 chain and can import an external model's JSON result. The extension itself still does not call an AI API.
+
+Normalized RT-04 output uses:
+
+- `status = proposed_not_human_reviewed`
+- `authority = interpretive_proposal_only`
+- `source_authenticity = unverified_interpretive_output`
+- `human_review.required = true`
+- `human_review.state = pending`
+
+Every proposed claim and assumption must cite at least one exact verbatim quote from that provider's governed RT-02 raw response. The Core derives the exact source response ID and character range itself; fabricated quotes are rejected. If a quote occurs multiple times, the proposal must specify which occurrence it means.
+
+Potential conflicts must involve at least two providers and may reference only evidence-backed claims / assumptions from the same provider side. Conflict candidates remain `resolution = unresolved` and `truth_status = not_evaluated`.
+
+RT-04 forbids winner / truth / model-ranking / recommendation / final-decision fields. Repeated wording and model majority are never upgraded to factual correctness or Human authority.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -113,7 +133,7 @@ Conversation text, drafts, ContextItems, and Core governance records are stored 
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
-RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses and does not add a new persistent comparison store in v0.1. Audit Log entries remain metadata-only and do not duplicate provider response bodies.
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses and does not add a new persistent comparison store in v0.1. RT-04 creates a runtime interpretive proposal and keeps its Audit Log metadata-only; claim text, assumption text, conflict explanations, evidence quotes, and raw responses are not duplicated into the Audit Log.
 
 ## Human Agency Core v0.1
 
@@ -133,6 +153,7 @@ The shared foundation includes:
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 - [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
 - [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
+- [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -143,7 +164,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
-RT-01 through RT-03 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
+RT-01 through RT-04 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
 
 ## Tests
 
@@ -151,7 +172,7 @@ RT-01 through RT-03 are currently Core contracts; a dedicated Room 4 browser run
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-03 Roundtable contracts.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-04 Roundtable contracts.
 
 ## License
 
