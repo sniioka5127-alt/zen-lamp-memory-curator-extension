@@ -12,12 +12,17 @@
       <div class="mark">◯</div>
       <div>
         <h1>ZEN LAMP<br><span>Memory Curator</span></h1>
-        <p>Turn long AI conversations into usable memory.</p>
+        <p>Choose what deserves to remain.</p>
       </div>
     </header>
 
     <section class="notice">
-      <strong>Local-only helper.</strong> This extension does not call any AI API or send your text to a server. It only creates a copy-paste prompt.
+      <strong>Local-first + Human Gate.</strong> This extension does not call an AI API. AI output is imported only as <code>PROPOSED</code> ContextItems and never becomes approved memory until you explicitly approve it.
+    </section>
+
+    <section class="field">
+      <label for="projectName">Project</label>
+      <input id="projectName" type="text" value="Memory Curator Local" placeholder="Project name" />
     </section>
 
     <section class="grid two">
@@ -38,8 +43,8 @@
     </section>
 
     <section id="existingMemoryWrap" class="field hidden">
-      <label for="existingMemory">Existing memory</label>
-      <textarea id="existingMemory" placeholder="Paste existing memory here for UPDATE mode."></textarea>
+      <label for="existingMemory">Existing memory (optional legacy input)</label>
+      <textarea id="existingMemory" placeholder="Leave blank to use approved local ContextItems for this project, or paste legacy memory here."></textarea>
     </section>
 
     <section class="field">
@@ -51,23 +56,50 @@
     </section>
 
     <section class="actions">
-      <button id="generate" type="button" class="primary">Generate prompt</button>
+      <button id="generate" type="button" class="primary">Generate curator prompt</button>
       <button id="copy" type="button">Copy prompt</button>
-      <button id="save" type="button">Save memory</button>
-      <button id="load" type="button">Load memory</button>
-      <button id="clear" type="button" class="ghost">Clear</button>
+      <button id="save" type="button">Save draft locally</button>
+      <button id="load" type="button">Load draft</button>
+      <button id="clear" type="button" class="ghost">Clear draft fields</button>
     </section>
 
     <section class="field">
       <label for="output">Generated Memory Curator prompt</label>
-      <textarea id="output" placeholder="Your generated prompt will appear here." readonly></textarea>
+      <textarea id="output" placeholder="Copy this prompt into ChatGPT, Claude, Gemini, or another AI." readonly></textarea>
+    </section>
+
+    <section class="stage">
+      <div class="stage-title">
+        <div>
+          <span class="step">2</span>
+          <strong>Import AI candidates</strong>
+        </div>
+        <span class="muted">No auto-approval</span>
+      </div>
+      <textarea id="aiResult" placeholder="Paste the AI response containing the MC-01 JSON context_items block here."></textarea>
+      <div class="actions compact">
+        <button id="importCandidates" type="button" class="primary">Import as PROPOSED</button>
+        <button id="refreshItems" type="button">Refresh local items</button>
+      </div>
+    </section>
+
+    <section class="stage">
+      <div class="stage-title">
+        <div>
+          <span class="step">3</span>
+          <strong>Human review</strong>
+        </div>
+        <button id="copyApproved" type="button" class="small">Copy approved memory</button>
+      </div>
+      <p id="reviewSummary" class="summary">No local ContextItems for this project yet.</p>
+      <div id="itemList" class="item-list"></div>
     </section>
 
     <footer>
-      <p><strong>Philosophy:</strong> More memory is not enough. We need memory governance.</p>
-      <p class="muted">ZEN LAMP PROJECT · v0.1.0</p>
+      <p><strong>Room 2 — Memory Curator:</strong> AI proposes. Human decides what remains.</p>
+      <p class="muted">HIRAKU Tools · Human Agency Core · MC-01</p>
     </footer>
   </main>
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>
