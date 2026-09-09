@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4の最初のCore入力層まで統合しています。
+長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡層まで統合しています。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-01 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-02 / v0.3.0** です。
 
 ## 基本思想
 
@@ -30,7 +30,7 @@ AI側がJSONに `status` や承認情報を書いても、ContextItemのAuthorit
 
 ## Room 3 — Context Bridge
 
-Popupに **Open Context Bridge** を追加し、専用画面からCB-01〜CB-06を一続きで操作できます。
+Popupの **Open Context Bridge** から、CB-01〜CB-06を一続きで操作できます。
 
 Browser Runtimeの流れは、
 
@@ -51,7 +51,7 @@ CB-06の任意Session保存は、Project ID、ContextPackage ID、RedactionPlan 
 
 ## Room 4 — Roundtable AI
 
-**RT-01** で Roundtable AI の Canonical Context Input 境界を実装しました。
+### RT-01 — Canonical Context Input
 
 複数AIの回答を比較する前に、RT-01は全参加Providerが、同一のHuman承認済みContextPackage Revision、TransferView、Canonical JSON、Semantic Fingerprint、CB-04 Provider Renderingに結び付いていることを検証します。Provider構成もHuman承認済みRoundtable Targetと完全一致している必要があります。
 
@@ -66,7 +66,44 @@ RT-01が作る `RoundtableCanonicalInput` は、
 
 RT-01では、**勝者、モデル順位、回答解釈、多数決、Human Decisionを作りません。**
 
-CB-05 Receiptを付けた場合も、記録されるのはHumanが手動引渡しを確認したという証跡であり、`delivery_status = unverified` を維持します。Providerが実際に受領・解釈・利用したことの証明とは扱いません。
+### RT-02 — Provider Response Capture / Provenance
+
+RT-02では、各Providerから返ってきた回答を、**解釈する前の生の証拠**として、対応するRT-01 Inputへ固定して保存します。
+
+RT-02 v0.1は手動取得のみです。
+
+- `manual_paste`
+- `manual_file`
+- `other_manual`
+
+Provider名は人間が手動で帰属させるため、CaptureはHuman actorのみが実行できます。記録される主な状態は、
+
+- `status = captured_raw_uninterpreted`
+- `authority = evidence_only_no_interpretation`
+- `source_authenticity = human_attested_unverified`
+
+です。
+
+`raw_response` は先頭・末尾の空白や改行を含め、**入力された文字列をそのまま保存**します。Trim、書き換え、要約、翻訳、分類は行いません。
+
+各Responseは、
+
+- RT-01 Input ID
+- Provider
+- CB-04 Rendering ID
+- ContextPackage Revision
+- TransferView ID
+- Canonical Semantic Fingerprint
+
+へ結び付けられます。
+
+Response本文には軽量Fingerprintも持たせ、後から内容が変わった場合に検知できるようにします。ただしこのFingerprintは暗号学的な真正性証明ではありません。
+
+CB-05 Receiptを付ける場合も、`provider_delivery_status = unverified` を維持し、Providerが実際に受領したことや、ResponseがProviderによって暗号学的に認証されたことまでは証明しません。
+
+誤って取り込んだResponseを修正する場合、古い記録を上書きせず、新しいResponseを `supersedes_response_id` で結び付けます。過去のRaw Evidenceは残ります。
+
+RT-02では、**回答の比較、要約、Agreement判定、モデル採点、多数決、勝者選定、Human Decisionを行いません。**
 
 ## Local First / Privacy
 
@@ -76,7 +113,7 @@ CB-05 Receiptを付けた場合も、記録されるのはHumanが手動引渡�
 
 CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
 
-RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。Audit Eventもメタデータだけを記録します。
+RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存しますが、Audit Logには本文を重複保存せずメタデータだけを記録します。
 
 ## Human Agency Core v0.1
 
@@ -94,6 +131,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
+- [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -104,7 +142,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 5. `manifest.json` が入っているフォルダを選択する。
 6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
 
-RT-01は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
+RT-01とRT-02は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
 
 ## テスト
 
@@ -112,7 +150,7 @@ RT-01は現時点ではCore Contractです。Room 4専用Browser Runtimeは後�
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01 Canonical Context Input Contractを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01 Canonical Context Input、RT-02 Provider Response Capture / Provenanceを検証します。
 
 ## ライセンス
 
