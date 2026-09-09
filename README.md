@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with governed Room 3 Context Bridge and Room 4 Roundtable browser runtimes.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with governed Room 3 Context Bridge and Room 4 Roundtable browser runtimes plus a system-wide Human Decision Gate.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-06 / v0.4.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-06 + HG-01 / v0.4.0**.
 
 ## Principle
 
@@ -168,6 +168,31 @@ Provider prompts and the RT-04 extraction prompt are manual-copy only. The runti
 
 RT-06 also does not create a new full-session persistence layer. RT-02 raw evidence and RT-05 Human review records continue to use their existing governed Core stores; RT-01 / RT-03 / RT-04 remain runtime artifacts under their current contracts.
 
+## Human Gate — HG-01 Human Decision Record / Decision Gate
+
+HG-01 is the first explicit final-judgment record after Room 4. Human Gate remains a **system-wide boundary, not a fifth room**.
+
+HG-01 starts only from an active finalized RT-05 review and creates a separate Human-authored decision artifact. The Human records:
+
+- the decision question;
+- `decided`, `deferred`, or `no_action` disposition;
+- decision text;
+- rationale;
+- optional Human-accepted RT-05 subject references;
+- alternatives considered;
+- unresolved questions;
+- conditions;
+- optional revisit trigger/time.
+
+A finalized record uses `status = finalized_human_decision`, but it deliberately keeps:
+
+- `truth_status = not_independently_verified`
+- `execution_status = not_executed_by_hg01`
+
+Therefore a Human Decision Record is authoritative as a record of the Human judgment, **not** as automatic factual verification or external execution.
+
+Only Human actors may create, update, finalize, revoke, or supersede HG-01 records. Finalization is revision-bound; finalized/revoked decisions are immutable and later judgment requires a new `supersedes_decision_id` record.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -176,7 +201,7 @@ Conversation text, drafts, ContextItems, and Core governance records are stored 
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
-RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses. RT-04 creates a runtime interpretive proposal. RT-05 persists the Human review decision artifact, but does not duplicate Claim text, Assumption text, Conflict explanations, evidence quotes, or raw provider responses into the review record or Audit Log.
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses. RT-04 creates a runtime interpretive proposal. RT-05 persists the Human review decision artifact, but does not duplicate Claim text, Assumption text, Conflict explanations, evidence quotes, or raw provider responses into the review record or Audit Log. HG-01 persists the Human decision narrative because that narrative is the record itself, while its Audit Log remains metadata-only and does not duplicate decision text, rationale, alternatives, unresolved questions, conditions, or free-text revocation reasons.
 
 ## Human Agency Core v0.1
 
@@ -199,6 +224,7 @@ The shared foundation includes:
 - [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
 - [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
 - [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
+- [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -209,13 +235,15 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, **Open Context Bridge** for Room 3, or **Open Roundtable AI** for Room 4.
 
+HG-01 is currently a Core contract; a dedicated Human Decision browser surface can be added as a later phase without turning Human Gate into a fifth room.
+
 ## Tests
 
 ```bash
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-06 Roundtable contracts.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 through RT-06 Roundtable contracts, and HG-01 Human Decision Gate.
 
 ## License
 
