@@ -164,10 +164,10 @@ function normalizeSupportingRefs(refs = [], review) {
 }
 
 function assertFinalizedReview(review, extraction, input, comparison, responses) {
-  assertRoundtableInterpretiveReviewIntegrity(review, extraction, input, comparison, responses);
-  if (review.status !== "finalized_human_review" || review.human_gate?.state !== "finalized") {
+  if (review?.status !== "finalized_human_review" || review?.human_gate?.state !== "finalized") {
     throw new Error("HG-01 requires an active finalized RT-05 Human review");
   }
+  assertRoundtableInterpretiveReviewIntegrity(review, extraction, input, comparison, responses);
   return true;
 }
 
