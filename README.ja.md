@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeも統合しています。
+長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4の最初のCore入力層まで統合しています。
 
-現在の拡張機能開発版は **MC-01 + CB-06 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-01 / v0.3.0** です。
 
 ## 基本思想
 
@@ -49,6 +49,25 @@ Room 3には現在、以下を実装しています。
 
 CB-06の任意Session保存は、Project ID、ContextPackage ID、RedactionPlan ID、TransferView ID、画面設定などの**参照情報だけ**を保存し、Canonical JSONやRendered Provider PromptをSession Cacheへ重複保存しません。
 
+## Room 4 — Roundtable AI
+
+**RT-01** で Roundtable AI の Canonical Context Input 境界を実装しました。
+
+複数AIの回答を比較する前に、RT-01は全参加Providerが、同一のHuman承認済みContextPackage Revision、TransferView、Canonical JSON、Semantic Fingerprint、CB-04 Provider Renderingに結び付いていることを検証します。Provider構成もHuman承認済みRoundtable Targetと完全一致している必要があります。
+
+RT-01が作る `RoundtableCanonicalInput` は、
+
+- `status = prepared_not_executed`
+- 1つのCanonical Semantic Payload
+- 同じPayloadから導かれたProvider別Presentation Input
+- 任意のCB-05 Human-confirmed Handoff Evidence
+
+を持ちます。
+
+RT-01では、**勝者、モデル順位、回答解釈、多数決、Human Decisionを作りません。**
+
+CB-05 Receiptを付けた場合も、記録されるのはHumanが手動引渡しを確認したという証跡であり、`delivery_status = unverified` を維持します。Providerが実際に受領・解釈・利用したことの証明とは扱いません。
+
 ## Local First / Privacy
 
 この拡張機能自身はAI APIを呼び出しません。
@@ -56,6 +75,8 @@ CB-06の任意Session保存は、Project ID、ContextPackage ID、RedactionPlan 
 会話、Draft、ContextItems、CoreのGovernance Recordは `chrome.storage.local` に保存されます。ユーザー自身がコピー／手動引渡しを行うまでは、外部AIへ送信されません。
 
 CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
+
+RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。Audit Eventもメタデータだけを記録します。
 
 ## Human Agency Core v0.1
 
@@ -72,6 +93,7 @@ CB-03のローカル検出は補助機能です。メールアドレス、電話
 - [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
+- [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -82,13 +104,15 @@ CB-03のローカル検出は補助機能です。メールアドレス、電話
 5. `manifest.json` が入っているフォルダを選択する。
 6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
 
+RT-01は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
+
 ## テスト
 
 ```bash
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core、CB-06 Browser Runtime Contractを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01 Canonical Context Input Contractを検証します。
 
 ## ライセンス
 
