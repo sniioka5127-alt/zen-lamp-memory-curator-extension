@@ -106,6 +106,7 @@ export const AUDIT_ACTION = Object.freeze([
   "redaction_plan_created",
   "redaction_view_approved",
   "redaction_view_revoked",
+  "context_rendered",
   "transfer_attempt",
   "transfer_approved",
   "transfer_denied"
