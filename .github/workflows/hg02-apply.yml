@@ -22,6 +22,7 @@ jobs:
         run: |
           node scripts/apply-hg02-browser-integration.mjs
           node scripts/fix-hg02-browser-runtime.mjs
+          node scripts/fix-hg02-readmes.mjs
       - name: Commit generated integration changes
         run: |
           git config user.name "github-actions[bot]"
