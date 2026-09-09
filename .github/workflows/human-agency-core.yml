@@ -9,6 +9,7 @@ on:
       - cb-*
       - rt-*
       - hg-*
+      - ws-*
   pull_request:
     branches:
       - main
