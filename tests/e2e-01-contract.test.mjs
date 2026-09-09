@@ -33,6 +33,12 @@ test("E2E-01 keeps Chat Atlas Project identity out of the HTTP query string", ()
   assert.match(script, /#project=/);
 });
 
+test("E2E-01 locks the Memory Curator popup startup regression", () => {
+  const popup = read("popup.js");
+  assert.match(popup, /async function copyOutput\(\)/);
+  assert.match(popup, /\$\("copy"\)\.addEventListener\("click", copyOutput\)/);
+});
+
 test("E2E-01 deployment verifier requires the AT-03 public markers", () => {
   const script = read("scripts/e2e-01-deployment-verify.mjs");
   assert.match(script, /https:\/\/zen-lamp\.com\/tools\/chat-atlas\//);
@@ -49,4 +55,5 @@ test("E2E-01 workflow blocks on browser smoke but observes deployment independen
   assert.match(workflow, /continue-on-error: true/);
   assert.match(workflow, /e2e-01-browser-report/);
   assert.match(workflow, /e2e-01-deployment-report/);
+  assert.doesNotMatch(workflow, /instrument-memory/);
 });
