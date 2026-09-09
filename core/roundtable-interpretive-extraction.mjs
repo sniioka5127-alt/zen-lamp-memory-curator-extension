@@ -163,10 +163,10 @@ function normalizeEvidence(entries, provider, response) {
   });
 }
 
-function normalizeProposalItem(item, type, index, responseMap, externalIds) {
+function normalizeProposalItem(item, type, index, responseMap, externalRefs) {
   if (!item || typeof item !== "object") throw new TypeError(`RT-04 ${type} proposal must be an object`);
   const externalId = requiredText(item.id, `${type}.id`);
-  if (externalIds.has(externalId)) throw new Error(`RT-04 proposal id must be unique: ${externalId}`);
+  if (externalRefs.has(externalId)) throw new Error(`RT-04 proposal id must be unique: ${externalId}`);
   const provider = normalizeProvider(item.provider);
   const response = responseMap.get(provider);
   if (!response) throw new Error(`RT-04 ${type} references provider outside RT-01: ${provider}`);
@@ -178,24 +178,34 @@ function normalizeProposalItem(item, type, index, responseMap, externalIds) {
     evidence: normalizeEvidence(item.evidence, provider, response),
     interpretation_status: "proposed_not_validated"
   };
-  externalIds.set(externalId, normalized.id);
+  externalRefs.set(externalId, { id: normalized.id, provider, type });
   return normalized;
 }
 
-function normalizeRefList(values, name, externalIds) {
+function normalizeRefList(values, name, externalRefs, provider, expectedType) {
   if (values == null) return [];
   if (!Array.isArray(values)) throw new TypeError(`${name} must be an array`);
   return values.map((value) => {
     const externalId = requiredText(value, name);
-    const normalized = externalIds.get(externalId);
-    if (!normalized) throw new Error(`RT-04 conflict references unknown proposal id: ${externalId}`);
-    return normalized;
+    const ref = externalRefs.get(externalId);
+    if (!ref) throw new Error(`RT-04 conflict references unknown proposal id: ${externalId}`);
+    if (ref.provider !== provider) {
+      throw new Error(`RT-04 conflict side ${provider} cannot reference ${ref.provider} proposal: ${externalId}`);
+    }
+    if (ref.type !== expectedType) {
+      throw new Error(`RT-04 conflict ${name} references wrong proposal type: ${externalId}`);
+    }
+    return ref.id;
   });
 }
 
-function normalizeConflict(conflict, index, responseMap, externalIds) {
+function normalizeConflict(conflict, index, responseMap, externalRefs, seenConflictIds) {
   if (!conflict || typeof conflict !== "object") throw new TypeError("RT-04 conflict proposal must be an object");
   const externalId = requiredText(conflict.id, "conflict.id");
+  if (seenConflictIds.has(externalId) || externalRefs.has(externalId)) {
+    throw new Error(`RT-04 proposal id must be unique: ${externalId}`);
+  }
+  seenConflictIds.add(externalId);
   const conflictType = requiredText(conflict.conflict_type, "conflict.conflict_type");
   if (!ROUNDTABLE_CONFLICT_TYPE.includes(conflictType)) {
     throw new Error(`Unsupported RT-04 conflict_type: ${conflictType}`);
@@ -210,8 +220,8 @@ function normalizeConflict(conflict, index, responseMap, externalIds) {
     if (!responseMap.has(provider)) throw new Error(`RT-04 conflict provider is outside RT-01: ${provider}`);
     if (seenProviders.has(provider)) throw new Error(`RT-04 conflict has duplicate provider side: ${provider}`);
     seenProviders.add(provider);
-    const claimRefs = normalizeRefList(side.claim_ids, "conflict.claim_ids", externalIds);
-    const assumptionRefs = normalizeRefList(side.assumption_ids, "conflict.assumption_ids", externalIds);
+    const claimRefs = normalizeRefList(side.claim_ids, "conflict.claim_ids", externalRefs, provider, "claim");
+    const assumptionRefs = normalizeRefList(side.assumption_ids, "conflict.assumption_ids", externalRefs, provider, "assumption");
     if (!claimRefs.length && !assumptionRefs.length) {
       throw new Error(`RT-04 conflict side requires at least one claim or assumption reference: ${provider}`);
     }
@@ -281,10 +291,11 @@ export function normalizeRoundtableInterpretiveProposal(input, comparison, respo
   const assumptionsInput = Array.isArray(proposal.assumptions) ? proposal.assumptions : [];
   const conflictsInput = Array.isArray(proposal.conflicts) ? proposal.conflicts : [];
 
-  const externalIds = new Map();
-  const claims = claimsInput.map((item, index) => normalizeProposalItem(item, "claim", index, map, externalIds));
-  const assumptions = assumptionsInput.map((item, index) => normalizeProposalItem(item, "assumption", index, map, externalIds));
-  const conflicts = conflictsInput.map((item, index) => normalizeConflict(item, index, map, externalIds));
+  const externalRefs = new Map();
+  const claims = claimsInput.map((item, index) => normalizeProposalItem(item, "claim", index, map, externalRefs));
+  const assumptions = assumptionsInput.map((item, index) => normalizeProposalItem(item, "assumption", index, map, externalRefs));
+  const seenConflictIds = new Set();
+  const conflicts = conflictsInput.map((item, index) => normalizeConflict(item, index, map, externalRefs, seenConflictIds));
 
   const extraction = {
     schema_version: "0.1",
@@ -354,12 +365,30 @@ export function assertRoundtableInterpretiveExtractionIntegrity(extraction, inpu
   }
   assertNoDecisionFields(extraction, "extraction");
 
+  if (!Array.isArray(extraction.source_responses) || extraction.source_responses.length !== configured.length) {
+    throw new Error("RT-04 source response bindings are incomplete");
+  }
+  for (let i = 0; i < configured.length; i += 1) {
+    const provider = configured[i];
+    const expected = map.get(provider);
+    const actual = extraction.source_responses[i];
+    if (actual?.provider !== provider || actual.response_id !== expected.id || actual.rendering_id !== expected.rendering_id ||
+        actual.response_fingerprint?.algorithm !== expected.response_fingerprint?.algorithm ||
+        actual.response_fingerprint?.value !== expected.response_fingerprint?.value ||
+        actual.response_fingerprint?.length !== expected.response_fingerprint?.length) {
+      throw new Error(`RT-04 source response binding was modified: ${provider}`);
+    }
+  }
+
   const ids = new Set();
+  const itemById = new Map();
   for (const item of [...(extraction.claims || []), ...(extraction.assumptions || [])]) {
     if (ids.has(item.id)) throw new Error(`RT-04 duplicate normalized proposal id: ${item.id}`);
     ids.add(item.id);
+    itemById.set(item.id, item);
     const response = map.get(normalizeProvider(item.provider));
     if (!response) throw new Error(`RT-04 proposal provider is outside the source set: ${item.provider}`);
+    if (item.interpretation_status !== "proposed_not_validated") throw new Error(`RT-04 proposal status was modified: ${item.id}`);
     if (!Array.isArray(item.evidence) || !item.evidence.length) throw new Error("RT-04 proposal evidence is missing");
     for (const evidence of item.evidence) {
       if (evidence.response_id !== response.id || evidence.provider !== item.provider ||
@@ -373,6 +402,7 @@ export function assertRoundtableInterpretiveExtractionIntegrity(extraction, inpu
 
   for (const conflict of extraction.conflicts || []) {
     if (conflict.resolution !== "unresolved" || conflict.truth_status !== "not_evaluated" ||
+        conflict.interpretation_status !== "proposed_not_validated" ||
         !ROUNDTABLE_CONFLICT_TYPE.includes(conflict.conflict_type)) {
       throw new Error(`RT-04 conflict authority was modified: ${conflict.id}`);
     }
@@ -382,8 +412,20 @@ export function assertRoundtableInterpretiveExtractionIntegrity(extraction, inpu
       const provider = normalizeProvider(side.provider);
       if (!map.has(provider) || providers.has(provider)) throw new Error(`RT-04 conflict provider side is invalid: ${provider}`);
       providers.add(provider);
-      for (const ref of [...(side.claim_ids || []), ...(side.assumption_ids || [])]) {
-        if (!ids.has(ref)) throw new Error(`RT-04 conflict reference is invalid: ${ref}`);
+      for (const ref of side.claim_ids || []) {
+        const item = itemById.get(ref);
+        if (!item || !ref.startsWith("claim_") || item.provider !== provider) {
+          throw new Error(`RT-04 conflict claim reference is invalid: ${ref}`);
+        }
+      }
+      for (const ref of side.assumption_ids || []) {
+        const item = itemById.get(ref);
+        if (!item || !ref.startsWith("assumption_") || item.provider !== provider) {
+          throw new Error(`RT-04 conflict assumption reference is invalid: ${ref}`);
+        }
+      }
+      if (!(side.claim_ids || []).length && !(side.assumption_ids || []).length) {
+        throw new Error(`RT-04 conflict side has no evidence-backed proposal reference: ${provider}`);
       }
     }
   }
