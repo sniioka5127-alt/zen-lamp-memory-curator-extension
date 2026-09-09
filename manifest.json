@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ZEN LAMP Memory Curator",
-  "version": "0.5.0",
-  "description": "Local-first Human Agency tools for human-reviewed memory, governed Context Bridge handoff, Roundtable comparison, and a Human Decision Gate.",
+  "version": "0.6.0",
+  "description": "Local-first Human Agency tools with a Project-centered One House workspace, governed memory, Context Bridge, Roundtable comparison, and Human Decision Gate.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "ZEN LAMP Memory Curator",
