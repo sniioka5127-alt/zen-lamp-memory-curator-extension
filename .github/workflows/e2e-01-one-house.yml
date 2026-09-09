@@ -33,6 +33,8 @@ jobs:
           test -n "$CHROME_BIN"
           echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
           "$CHROME_BIN" --version
+      - name: Instrument Room 2 binding diagnostic
+        run: node scripts/e2e-01-instrument-memory.mjs
       - name: Run real Chromium extension smoke
         run: xvfb-run -a node scripts/e2e-01-browser-smoke.mjs
       - name: Upload browser smoke report
