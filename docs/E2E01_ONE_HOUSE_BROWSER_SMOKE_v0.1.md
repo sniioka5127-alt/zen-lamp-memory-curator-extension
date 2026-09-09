@@ -1,6 +1,6 @@
 # E2E-01｜One House End-to-End Browser Smoke Test / Deployment Verification v0.1
 
-Status: **Implementation candidate**
+Status: **Implemented**
 
 ## Purpose
 
@@ -35,13 +35,13 @@ The order above follows the browser actions used by the smoke script. Product se
 
 It does not replace `chrome.storage`, `chrome.tabs`, or `chrome.runtime` with a fake browser shim.
 
-The CI workflow runs the script under Xvfb so normal extension support is available even on a Linux runner without a physical display.
+CI installs Chrome for Testing and runs the script under Xvfb so normal extension support is available even on a Linux runner without a physical display.
 
 ## Browser assertions
 
 E2E-01 requires all of the following:
 
-1. The unpacked extension loads.
+1. The unpacked extension loads and is visible to Chrome.
 2. `workspace.html` and `workspace.js` initialize in Chromium.
 3. A Human Project can be created through the actual Workspace UI.
 4. Room 2 opens as `popup.html?project=<id>` and binds the project field read-only to that Project.
@@ -54,6 +54,14 @@ E2E-01 requires all of the following:
 The browser report is written to:
 
 `artifacts/e2e-01-browser-report.json`
+
+## Regression discovered by E2E-01
+
+The first real-browser run exposed a Room 2 startup failure that static/Core tests had not detected:
+
+`ReferenceError: copyOutput is not defined`
+
+Because the exception occurred during `popup.js` module evaluation, Memory Curator never reached the One House Project-binding code. E2E-01 fixed the missing copy handler and now includes a contract assertion so that this startup regression is not silently reintroduced.
 
 ## Deployment verification
 
