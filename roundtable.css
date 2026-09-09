@@ -16,3 +16,18 @@
   .matrix { font-size: .82rem; }
   .matrix th, .matrix td { padding: 6px; }
 }
+
+.human-boundary { margin: 28px 0 18px; padding: 14px 18px; border-top: 2px solid rgba(0,0,0,.18); border-bottom: 2px solid rgba(0,0,0,.18); display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.human-boundary span { font-size: .88rem; opacity: .72; }
+.human-boundary strong { font-size: 1rem; letter-spacing: .03em; }
+.decision-panel { border-width: 2px; }
+.human-step { font-weight: 800; }
+.decision-authority { margin: 12px 0 18px; padding: 12px 14px; border-radius: 12px; background: rgba(0,0,0,.045); line-height: 1.55; }
+.decision-subsection { margin-top: 18px; }
+.decision-subsection h3 { margin-bottom: 4px; }
+.supporting-list { display: grid; gap: 8px; margin: 10px 0 16px; }
+.supporting-option { display: flex; gap: 8px; align-items: flex-start; padding: 9px 10px; border: 1px solid rgba(0,0,0,.1); border-radius: 10px; font-weight: 500; line-height: 1.45; }
+.supporting-option input { margin-top: 3px; }
+.decision-panel textarea { min-height: 120px; }
+.decision-actions { margin-top: 18px; }
+@media (max-width: 720px) { .human-boundary { align-items: flex-start; flex-direction: column; } }

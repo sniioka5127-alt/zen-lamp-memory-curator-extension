@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="context-bridge.css" />
   <link rel="stylesheet" href="roundtable.css" />
 </head>
-<body data-rt06="roundtable-browser-runtime">
+<body data-rt06="roundtable-browser-runtime" data-hg02="decision-gate-browser-integration">
   <main class="workspace">
     <header class="hero">
       <div class="mark">◯</div>
@@ -19,7 +19,7 @@
     </header>
 
     <section class="notice">
-      <strong>Local-first + manual-only.</strong> RT-06 orchestrates RT-01 through RT-05 in the browser. It does not call a provider API, auto-send prompts, majority-vote, rank models, or make the Human decision.
+      <strong>Local-first + manual-only.</strong> RT-06 orchestrates RT-01 through RT-05 in the browser, and HG-02 exposes the Human Decision Gate after Roundtable review. It does not call a provider API, auto-send prompts, majority-vote, rank models, execute a decision, or let AI finalize Human judgment.
     </section>
 
     <nav class="progress" aria-label="Roundtable workflow">
@@ -29,6 +29,7 @@
       <span data-progress="rt03">RT-03</span>
       <span data-progress="rt04">RT-04</span>
       <span data-progress="rt05">RT-05</span>
+      <span data-progress="hg01">Decision Gate</span>
     </nav>
 
     <section class="panel">
@@ -88,6 +89,46 @@
       <div id="reviewSummary" class="detail"></div>
     </section>
 
+    <div class="human-boundary" role="separator" aria-label="AI comparison ends; Human Decision Gate begins">
+      <span>AI comparison and interpretive review end above</span>
+      <strong>Human Decision Gate</strong>
+    </div>
+
+    <section class="panel decision-panel" data-hg02-panel="human-decision-gate">
+      <div class="panel-head"><div><span class="step human-step">H</span><h2>HG-01 · Human Decision Record</h2></div><span id="decisionStatus" class="status">Waiting for finalized RT-05</span></div>
+      <p class="muted">This is the Human judgment boundary. A finalized decision records what the Human decided and why. It does not certify factual truth and it does not execute the decision.</p>
+      <div class="decision-authority"><strong>Human authority only.</strong> RT-05 accept = usable deliberation material, not truth. HG-01 finalize = Human-authored decision record, not AI selection or external execution.</div>
+      <div class="grid two">
+        <label>Decision question<input id="decisionQuestion" type="text" placeholder="What decision is the Human making?" /></label>
+        <label>Disposition<select id="decisionDisposition"><option value="pending">pending</option><option value="decided">decided</option><option value="deferred">deferred</option><option value="no_action">no_action</option></select></label>
+      </div>
+      <label>Human decision<textarea id="decisionText" placeholder="State the Human decision in your own words."></textarea></label>
+      <label>Human rationale<textarea id="decisionRationale" placeholder="Why did you make this decision?"></textarea></label>
+      <div class="decision-subsection">
+        <h3>Human-accepted RT-05 interpretations used as support</h3>
+        <p class="muted">Optional. Only subjects explicitly accepted by the Human in RT-05 can be cited here.</p>
+        <div id="decisionSupportingList" class="supporting-list"></div>
+      </div>
+      <div class="grid two">
+        <label>Alternatives considered<textarea id="decisionAlternatives" placeholder="One alternative per line"></textarea></label>
+        <label>Unresolved questions<textarea id="decisionUnresolved" placeholder="One unresolved question per line"></textarea></label>
+      </div>
+      <label>Conditions / safeguards<textarea id="decisionConditions" placeholder="One condition per line"></textarea></label>
+      <div class="grid two">
+        <label>Revisit trigger<input id="decisionRevisitTrigger" type="text" placeholder="Required for deferred unless a revisit time is set" /></label>
+        <label>Revisit time<input id="decisionRevisitAt" type="text" placeholder="Optional checkpoint" /></label>
+      </div>
+      <label>Revocation reason<input id="decisionRevokeReason" type="text" placeholder="Used only when revoking a finalized Human decision" /></label>
+      <div class="actions decision-actions">
+        <button id="startDecision" type="button" class="primary">Open Human Decision Gate</button>
+        <button id="saveDecision" type="button">Save Human decision draft</button>
+        <button id="finalizeDecision" type="button" class="primary">Finalize Human decision</button>
+        <button id="revokeDecision" type="button" class="ghost">Revoke finalized decision</button>
+        <button id="supersedeDecision" type="button" class="ghost">Create superseding decision</button>
+      </div>
+      <div id="decisionSummary" class="detail"></div>
+    </section>
+
     <section class="panel compact-panel">
       <div class="panel-head"><div><h2>Runtime controls</h2></div></div>
       <div class="actions">
@@ -98,7 +139,8 @@
 
     <footer>
       <p><strong>Room 4 — Roundtable AI:</strong> same context → raw evidence → descriptive comparison → proposed interpretation → Human review.</p>
-      <p class="muted">RT-01 → RT-06 · No majority-as-truth · No final decision in Room 4.</p>
+      <p><strong>Human Gate:</strong> Human review → Human-authored decision record. The Decision Gate is a system boundary, not a fifth AI room.</p>
+      <p class="muted">RT-01 → RT-06 → HG-01 / HG-02 · No majority-as-truth · No AI-authored final decision · No automatic execution.</p>
     </footer>
   </main>
   <script type="module" src="roundtable.js"></script>

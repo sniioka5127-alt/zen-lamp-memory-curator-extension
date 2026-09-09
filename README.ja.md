@@ -2,7 +2,7 @@
 
 長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較／解釈レビュー層まで統合しています。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-05 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-06 + HG-02 / v0.5.0** です。
 
 ## 基本思想
 
@@ -192,6 +192,20 @@ RT-05の作成・変更・確定・取消・差し替えはHuman actorだけが�
 RT-05のHuman GateはReview Revisionに固定されます。確定済み／取消済みReviewは変更できず、修正する場合は `supersedes_review_id` を持つ新しいReviewを作ります。確定済みReviewはHumanだけがRevokeできます。
 
 またRT-05はRT-01→RT-04の証跡チェーンを再検証し、RT-04のInterpretation FingerprintへReviewを固定します。RT-04 Extractionそのものを書き換えず、Human Review Artifactを別オブジェクトとして保持します。
+
+## Human Gate — 決める
+
+### HG-01 — Human Decision Record / Decision Gate
+
+HG-01は、確定済みRT-05 Human Reviewの後に、人間自身の最終判断を記録する境界です。
+
+### HG-02 — Decision Gate Browser Integration
+
+HG-02では第5のAI Roomを作らず、既存Roundtable画面のRT-05直後にHuman Decision Gateを配置します。HG-01 Coreを通じて、HumanだけがDraft作成・保存・確定・取消・差し替えを行えます。
+
+Decision Gateを開けるのはRT-05確定後だけです。判断材料として参照できるRoundtable解釈はRT-05でHumanがacceptした項目だけです。確定後も `truth_status = not_independently_verified`、`execution_status = not_executed_by_hg01` を維持します。
+
+Provider API、自動実行、多数派からの自動決定、モデル勝者、AIによる最終判断は追加しません。
 
 ## Local First / Privacy
 

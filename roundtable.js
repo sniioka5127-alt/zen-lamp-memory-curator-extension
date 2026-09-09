@@ -3,6 +3,7 @@ import {
   ContextPackageStore,
   ContextRedactionLayer,
   ContextRenderer,
+  HumanDecisionRecordStore,
   RoundtableCanonicalInputBuilder,
   RoundtableComparisonEngine,
   RoundtableInterpretiveExtractionEngine,
@@ -26,6 +27,7 @@ const responseStore = new RoundtableResponseStore(adapter, { auditLog });
 const comparisonEngine = new RoundtableComparisonEngine({ auditLog });
 const extractionEngine = new RoundtableInterpretiveExtractionEngine({ auditLog });
 const reviewStore = new RoundtableInterpretiveReviewStore(adapter, { auditLog });
+const decisionStore = new HumanDecisionRecordStore(adapter, { auditLog });
 
 const state = {
   pkg: null,
@@ -36,7 +38,8 @@ const state = {
   comparison: null,
   extractionPrompt: "",
   extraction: null,
-  review: null
+  review: null,
+  decision: null
 };
 
 function flash(message, tone = "") {
@@ -84,6 +87,7 @@ function resetAfterSource() {
   state.extractionPrompt = "";
   state.extraction = null;
   state.review = null;
+  state.decision = null;
   renderAll();
 }
 
@@ -93,6 +97,7 @@ function resetAfterInput() {
   state.extractionPrompt = "";
   state.extraction = null;
   state.review = null;
+  state.decision = null;
   renderAll();
 }
 
@@ -101,9 +106,11 @@ function resetAfterResponse() {
   state.extractionPrompt = "";
   state.extraction = null;
   state.review = null;
+  state.decision = null;
   renderComparison();
   renderExtraction();
   renderReview();
+  renderDecision();
   renderProgress();
 }
 
@@ -111,6 +118,7 @@ function resetAfterComparison() {
   state.extractionPrompt = "";
   state.extraction = null;
   state.review = null;
+  state.decision = null;
   renderExtraction();
   renderReview();
   renderProgress();
@@ -118,6 +126,7 @@ function resetAfterComparison() {
 
 function resetAfterExtraction() {
   state.review = null;
+  state.decision = null;
   renderReview();
   renderProgress();
 }
@@ -525,7 +534,9 @@ async function finalizeReview() {
     orderedResponses(),
     { actor: humanActor }
   );
+  state.decision = null;
   renderReview();
+  renderDecision();
   const accepted = acceptedInterpretiveSubjectIds(state.review);
   flash(`RT-05 finalized at revision ${state.review.revision}. ${accepted.length} interpretation subject(s) accepted for deliberation — not as truth or final decision.`);
 }
@@ -601,6 +612,191 @@ function renderReview() {
   $("reviewSummary").textContent = `${summary.total} subjects · ${summary.accept} accept · ${summary.reject} reject · ${summary.hold} hold · ${summary.pending} pending · truth_status=${state.review.truth_status} · final_decision_status=${state.review.final_decision_status}`;
 }
 
+function linesFromTextarea(id) {
+  return $(id).value.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+}
+
+function acceptedReviewEntries() {
+  if (state.review?.status !== "finalized_human_review") return [];
+  return state.review.decisions.filter((entry) => entry.decision === "accept");
+}
+
+function supportingRefsFromUi() {
+  return Array.from(document.querySelectorAll("input[data-decision-support]:checked")).map((input) => ({
+    subject_type: input.dataset.subjectType,
+    subject_id: input.dataset.subjectId
+  }));
+}
+
+function decisionContext() {
+  if (!state.review || !state.extraction || !state.input || !state.comparison) {
+    throw new Error("HG-02 requires the current finalized RT-05 source chain.");
+  }
+  return [state.review, state.extraction, state.input, state.comparison, orderedResponses()];
+}
+
+function setDecisionFieldState(enabled) {
+  for (const id of [
+    "decisionQuestion", "decisionDisposition", "decisionText", "decisionRationale",
+    "decisionAlternatives", "decisionUnresolved", "decisionConditions",
+    "decisionRevisitTrigger", "decisionRevisitAt"
+  ]) $(id).disabled = !enabled;
+  for (const input of document.querySelectorAll("input[data-decision-support]")) input.disabled = !enabled;
+}
+
+function fillDecisionForm(record) {
+  if (!record) return;
+  $("decisionQuestion").value = record.decision_question || "";
+  $("decisionDisposition").value = record.disposition || "pending";
+  $("decisionText").value = record.decision_text || "";
+  $("decisionRationale").value = record.rationale || "";
+  $("decisionAlternatives").value = (record.alternatives_considered || []).join("\n");
+  $("decisionUnresolved").value = (record.unresolved_questions || []).join("\n");
+  $("decisionConditions").value = (record.conditions || []).join("\n");
+  $("decisionRevisitTrigger").value = record.revisit?.trigger || "";
+  $("decisionRevisitAt").value = record.revisit?.at || "";
+}
+
+function renderDecisionSupportingList() {
+  const list = $("decisionSupportingList");
+  list.replaceChildren();
+  const accepted = acceptedReviewEntries();
+  if (!accepted.length) {
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = state.review?.status === "finalized_human_review"
+      ? "No RT-05 subjects were Human-accepted. The Human may still decide without citing Roundtable interpretations."
+      : "Finalize RT-05 before selecting supporting interpretations.";
+    list.appendChild(p);
+    return;
+  }
+  const selected = new Set((state.decision?.supporting_subject_refs || []).map((entry) => `${entry.subject_type}:${entry.subject_id}`));
+  for (const entry of accepted) {
+    const subject = extractionSubject(entry.subject_type, entry.subject_id);
+    const label = document.createElement("label");
+    label.className = "supporting-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.decisionSupport = "true";
+    checkbox.dataset.subjectType = entry.subject_type;
+    checkbox.dataset.subjectId = entry.subject_id;
+    checkbox.checked = selected.has(`${entry.subject_type}:${entry.subject_id}`);
+    const description = entry.subject_type === "conflict"
+      ? `${subject?.topic || entry.subject_id} — ${subject?.reason || ""}`
+      : subject?.statement || entry.subject_id;
+    label.append(checkbox, document.createTextNode(`${entry.subject_type} · ${entry.subject_id}${entry.provider ? ` · ${entry.provider}` : ""} — ${description}`));
+    list.appendChild(label);
+  }
+}
+
+async function startDecision({ supersede = false } = {}) {
+  if (state.review?.status !== "finalized_human_review") throw new Error("Finalize RT-05 before opening the Human Decision Gate.");
+  const question = $("decisionQuestion").value.trim();
+  if (!question) throw new Error("Enter the Human decision question first.");
+  const previous = state.decision;
+  if (supersede) {
+    if (!previous || !["finalized_human_decision", "revoked_human_decision"].includes(previous.status)) {
+      throw new Error("Only a finalized or revoked Human Decision Record can be superseded.");
+    }
+  } else if (previous) {
+    throw new Error("A Human Decision Record is already active in this runtime.");
+  }
+  state.decision = await decisionStore.create(...decisionContext(), {
+    actor: humanActor,
+    decision_question: question,
+    supersedes_decision_id: supersede ? previous.id : null
+  });
+  renderDecision();
+  flash(supersede
+    ? `New Human decision draft created to supersede ${previous.id}. The prior record remains unchanged.`
+    : "Human Decision Gate opened. The decision remains a draft until the Human explicitly finalizes it.");
+}
+
+async function updateDecisionFromForm({ announce = true } = {}) {
+  if (!state.decision || state.decision.status !== "draft_human_decision") throw new Error("Open a Human Decision draft first.");
+  state.decision = await decisionStore.update(
+    state.decision.id,
+    ...decisionContext(),
+    {
+      decision_question: $("decisionQuestion").value,
+      disposition: $("decisionDisposition").value,
+      decision_text: $("decisionText").value,
+      rationale: $("decisionRationale").value,
+      supporting_subject_refs: supportingRefsFromUi(),
+      alternatives_considered: linesFromTextarea("decisionAlternatives"),
+      unresolved_questions: linesFromTextarea("decisionUnresolved"),
+      conditions: linesFromTextarea("decisionConditions"),
+      revisit: {
+        trigger: $("decisionRevisitTrigger").value,
+        at: $("decisionRevisitAt").value
+      }
+    },
+    { actor: humanActor }
+  );
+  renderDecision();
+  if (announce) flash(`Human decision draft saved at revision ${state.decision.revision}. Nothing has been executed.`);
+  return state.decision;
+}
+
+async function finalizeDecision() {
+  await updateDecisionFromForm({ announce: false });
+  state.decision = await decisionStore.finalize(
+    state.decision.id,
+    ...decisionContext(),
+    { actor: humanActor }
+  );
+  renderDecision();
+  flash(`Human decision finalized at revision ${state.decision.revision}. This records Human judgment; execution_status remains ${state.decision.execution_status}.`);
+}
+
+async function revokeDecision() {
+  if (!state.decision || state.decision.status !== "finalized_human_decision") throw new Error("Only an active finalized Human Decision Record can be revoked.");
+  state.decision = await decisionStore.revoke(
+    state.decision.id,
+    ...decisionContext(),
+    { actor: humanActor, reason: $("decisionRevokeReason").value }
+  );
+  renderDecision();
+  flash("Human decision revoked. The historical record remains stored; create a superseding decision for a replacement judgment.");
+}
+
+function renderDecision() {
+  const summary = $("decisionSummary");
+  summary.replaceChildren();
+  renderDecisionSupportingList();
+  const reviewReady = state.review?.status === "finalized_human_review";
+  const record = state.decision;
+
+  $("startDecision").disabled = !reviewReady || Boolean(record);
+  $("saveDecision").disabled = !record || record.status !== "draft_human_decision";
+  $("finalizeDecision").disabled = !record || record.status !== "draft_human_decision";
+  $("revokeDecision").disabled = !record || record.status !== "finalized_human_decision";
+  $("supersedeDecision").disabled = !record || !["finalized_human_decision", "revoked_human_decision"].includes(record.status);
+  $("decisionRevokeReason").disabled = !record || record.status !== "finalized_human_decision";
+
+  if (!reviewReady) {
+    setStatus("decisionStatus", "Waiting for finalized RT-05");
+    setDecisionFieldState(false);
+    $("decisionQuestion").disabled = true;
+    summary.textContent = "Roundtable AI has not yet reached a finalized Human interpretive review. The final Human Decision Gate remains closed.";
+    return;
+  }
+
+  if (!record) {
+    setStatus("decisionStatus", "Ready for Human decision", "warn");
+    setDecisionFieldState(false);
+    $("decisionQuestion").disabled = false;
+    summary.textContent = "Enter the decision question and explicitly open the Human Decision Gate. No model output is promoted automatically.";
+    return;
+  }
+
+  fillDecisionForm(record);
+  const draft = record.status === "draft_human_decision";
+  setDecisionFieldState(draft);
+  setStatus("decisionStatus", `${record.status} · r${record.revision}`, record.status === "finalized_human_decision" ? "good" : record.status === "revoked_human_decision" ? "error" : "warn");
+  summary.textContent = `authority=${record.authority} · disposition=${record.disposition} · truth_status=${record.truth_status} · execution_status=${record.execution_status}${record.supersedes_decision_id ? ` · supersedes=${record.supersedes_decision_id}` : ""}`;
+}
+
 function renderProgress() {
   const achieved = new Set();
   if (state.pkg && state.view) achieved.add("source");
@@ -609,6 +805,7 @@ function renderProgress() {
   if (state.comparison) achieved.add("rt03");
   if (state.extraction) achieved.add("rt04");
   if (state.review?.status === "finalized_human_review") achieved.add("rt05");
+  if (state.decision?.status === "finalized_human_decision") achieved.add("hg01");
   for (const el of document.querySelectorAll("[data-progress]")) {
     el.classList.toggle("active", achieved.has(el.dataset.progress));
   }
@@ -634,9 +831,10 @@ async function resetRuntime() {
   state.extractionPrompt = "";
   state.extraction = null;
   state.review = null;
+  state.decision = null;
   $("extractionResult").value = "";
   renderAll();
-  flash("Room 4 runtime reset. Persisted RT-02 responses and RT-05 review records remain intact in Core storage.");
+  flash("Room 4 runtime reset. Persisted RT-02 responses, RT-05 reviews, and HG-01 Human Decision Records remain intact in Core storage.");
 }
 
 async function run(fn) {
@@ -661,6 +859,11 @@ $("copyExtractionPrompt").addEventListener("click", () => run(() => {
 $("importExtraction").addEventListener("click", () => run(importExtraction));
 $("startReview").addEventListener("click", () => run(startReview));
 $("finalizeReview").addEventListener("click", () => run(finalizeReview));
+$("startDecision").addEventListener("click", () => run(() => startDecision()));
+$("saveDecision").addEventListener("click", () => run(() => updateDecisionFromForm()));
+$("finalizeDecision").addEventListener("click", () => run(finalizeDecision));
+$("revokeDecision").addEventListener("click", () => run(revokeDecision));
+$("supersedeDecision").addEventListener("click", () => run(() => startDecision({ supersede: true })));
 $("resetRuntime").addEventListener("click", () => run(resetRuntime));
 
 await run(async () => {
@@ -670,5 +873,5 @@ await run(async () => {
     preferredView: params.get("view")
   });
   renderAll();
-  flash("Roundtable AI ready. Start from an approved Room 3 source; nothing is sent automatically.");
+  flash("Roundtable AI + Human Decision Gate ready. Start from an approved Room 3 source; nothing is sent or executed automatically.");
 });

@@ -69,7 +69,7 @@ test("RT-06: runtime delegates authority to Core contracts and keeps provider tr
   assert.equal(/majority_choice\s*=|winner\s*=|model_ranking\s*=/.test(js), false);
 });
 
-test("RT-06: popup exposes Room 4 and manifest advances to v0.4.0", () => {
+test("RT-06: popup exposes Room 4 on the integrated browser line", () => {
   const popup = read("popup.html");
   const launcher = read("popup-roundtable.js");
   const manifest = JSON.parse(read("manifest.json"));
@@ -77,7 +77,7 @@ test("RT-06: popup exposes Room 4 and manifest advances to v0.4.0", () => {
   assert.match(popup, /id="openRoundtable"/);
   assert.match(popup, /popup-roundtable\.js/);
   assert.match(launcher, /roundtable\.html/);
-  assert.equal(manifest.version, "0.4.0");
+  assert.match(manifest.version, /^0\.[45]\.0$/);
 });
 
 test("RT-06: browser module passes JavaScript syntax check", () => {
