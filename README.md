@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and the first Room 4 Roundtable Core input layer.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence layers.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-01 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-02 / v0.3.0**.
 
 ## Principle
 
@@ -49,7 +49,7 @@ CB-06 stores only session references and UI controls as its optional runtime ses
 
 ## Room 4 — Roundtable AI
 
-**RT-01** adds the Canonical Context Input boundary for Roundtable AI.
+### RT-01 — Canonical Context Input
 
 Before any provider responses are compared, RT-01 verifies that every Roundtable participant is bound to the same Human-approved ContextPackage revision, TransferView, canonical JSON, semantic fingerprint, and exact CB-04 provider rendering. Provider coverage must exactly match the approved Roundtable target.
 
@@ -61,7 +61,30 @@ RT-01 produces a runtime `RoundtableCanonicalInput` with:
 - optional CB-05 Human-confirmed handoff evidence
 - no winner, model ranking, response interpretation, majority vote, or Human decision
 
-If CB-05 receipts are supplied, RT-01 records the handoff evidence while preserving `delivery_status = unverified`; a manual handoff is not treated as proof that a provider received or processed the context.
+### RT-02 — Provider Response Capture / Provenance
+
+RT-02 captures each provider answer as **raw, uninterpreted evidence** bound to the exact RT-01 input.
+
+RT-02 v0.1 is manual-only:
+
+- `manual_paste`
+- `manual_file`
+- `other_manual`
+
+Because provider attribution is manually asserted, capture requires a Human actor and records:
+
+- `status = captured_raw_uninterpreted`
+- `authority = evidence_only_no_interpretation`
+- `source_authenticity = human_attested_unverified`
+- exact raw response text, preserving whitespace and line breaks
+- RT-01 input ID, provider, rendering ID, ContextPackage revision, TransferView, and canonical semantic fingerprint
+- a lightweight response fingerprint for mutation detection
+
+RT-02 does not trim, rewrite, summarize, translate, classify, compare, score, majority-vote, or select a winner.
+
+If a capture must be corrected, RT-02 creates a new record with `supersedes_response_id`; the earlier raw response remains unchanged as historical evidence.
+
+Optional CB-05 handoff receipts may strengthen provenance, but `provider_delivery_status` remains `unverified` and provider-origin authenticity remains Human-attested rather than provider-authenticated.
 
 ## Local First / Privacy
 
@@ -71,7 +94,7 @@ Conversation text, drafts, ContextItems, and Core governance records are stored 
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
-RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. Its audit event is metadata-only.
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed, but its Audit Log entry remains metadata-only and does not duplicate the response body.
 
 ## Human Agency Core v0.1
 
@@ -89,6 +112,7 @@ The shared foundation includes:
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
+- [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -99,7 +123,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
-RT-01 is currently a Core contract; a dedicated Room 4 browser runtime comes in a later phase.
+RT-01 and RT-02 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
 
 ## Tests
 
@@ -107,7 +131,7 @@ RT-01 is currently a Core contract; a dedicated Room 4 browser runtime comes in 
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 Canonical Context Input contract.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 Canonical Context Input, and RT-02 Provider Response Capture / Provenance contracts.
 
 ## License
 
