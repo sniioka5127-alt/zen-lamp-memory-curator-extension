@@ -54,16 +54,19 @@ Memory Curator owns **what remains**.
 
 The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** owns transfer and handoff governance.
 
-Room 3 now has four implemented Core phases:
+Room 3 now has five implemented Core phases:
 
 - **CB-01** defines the canonical ContextPackage schema, separate lifecycle, revision-bound Human Gate, source-integrity checks, freshness acknowledgment, and transfer-policy enforcement.
 - **CB-02** adds a local deterministic Context Selection Engine that ranks eligible approved ContextItems for a stated purpose while remaining strictly `proposal_only`.
 - **CB-03** adds a local Exclusion / Redaction Layer. Detector findings are proposal-only; a human must decide whether to redact, explicitly keep, or exclude content before an approved TransferView exists.
 - **CB-04** adds a Context Renderer that converts one approved TransferView into Generic / GPT / Claude / Gemini presentation formats while preserving one identical canonical semantic payload and fingerprint.
+- **CB-05** adds the Transfer Audit / Outbound Handoff Boundary. It separates `rendered_not_sent`, `attempted_not_confirmed`, and Human-confirmed handoff records, while keeping provider delivery explicitly `unverified`.
 
 CB-03 includes local hints for email, phone-like strings, IPv4 addresses, common credential-like patterns, exact custom literals, and Human-selected manual ranges. It does **not** claim complete PII or person-name detection. Redaction plans do not duplicate the matched sensitive text, and whole-item exclusions do not copy excluded content into the TransferView.
 
-CB-04 provider formatting may differ, but the canonical JSON and semantic fingerprint must remain identical. Roundtable rendering verifies this equivalence before returning provider-specific views. CB-04 still does not call an AI API or mark anything as sent; rendered artifacts remain `rendered_not_sent`.
+CB-04 provider formatting may differ, but the canonical JSON and semantic fingerprint must remain identical. Roundtable rendering verifies this equivalence before returning provider-specific views.
+
+CB-05 revalidates the approved ContextPackage, TransferView, provider target, canonical payload, fingerprint, and exact rendered text before an outbound handoff can be confirmed. Only a Human actor may create a handoff receipt. CB-05 v0.1 supports manual handoff records only; it does not call provider APIs and does not claim verified delivery.
 
 ## Local First / Privacy
 
@@ -84,8 +87,9 @@ The shared foundation includes:
 - [`CB-02 Context Selection Engine`](docs/CB02_CONTEXT_SELECTION_ENGINE_v0.1.md)
 - [`CB-03 Exclusion / Redaction Layer`](docs/CB03_EXCLUSION_REDACTION_v0.1.md)
 - [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
+- [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
 
-The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, ContextPackage governance, proposal-only context selection, Human-approved privacy-reduced TransferViews, and canonical provider rendering.
+The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, ContextPackage governance, proposal-only context selection, Human-approved privacy-reduced TransferViews, canonical provider rendering, and content-minimized outbound handoff receipts.
 
 ## Install on Chrome / Edge
 
