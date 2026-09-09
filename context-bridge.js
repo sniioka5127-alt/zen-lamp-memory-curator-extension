@@ -14,6 +14,7 @@ import {
 const $ = (id) => document.getElementById(id);
 const humanActor = { type: "human", id: "local_user" };
 const systemActor = { type: "system", name: "context_bridge_browser_runtime" };
+const workspaceProjectId = new URLSearchParams(location.search).get("project");
 
 const adapter = createChromeStorageAdapter(chrome.storage.local);
 const auditLog = new AuditLog(adapter);
@@ -603,7 +604,7 @@ $("loadSession").addEventListener("click", () => run(loadSession));
 $("resetSession").addEventListener("click", () => run(resetSession));
 
 await run(async () => {
-  await loadProjects();
+  await loadProjects(workspaceProjectId);
   await syncSelectedProject();
   renderAllDownstream();
   flash("Context Bridge ready. Nothing leaves the browser automatically.");
