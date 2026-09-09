@@ -1,68 +1,76 @@
 # ZEN LAMP Memory Curator Extension
 
-A simple local browser extension for turning long AI conversations into usable memory.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**.
 
-This repository contains an early proof of concept from the ZEN LAMP PROJECT.
+Current development version: **MC-01 / v0.2.0**.
 
-## What it does
-
-Long AI conversations contain a mixture of:
-
-- fixed rules
-- project context
-- discoveries
-- temporary notes
-- information that should not be carried forward
-- handoff material for the next chat
-
-A normal summary is not enough.
+## Principle
 
 The goal is not to preserve everything.
 
-**The goal is to help a human decide what deserves to continue.**
+**AI proposes memory candidates. The human decides what remains.**
 
-What we need is not simply more memory. We need memory governance.
-
-## Privacy
-
-This extension does not send conversation data to any external server.
-
-It does not call an AI API.
-
-Text remains in the browser unless the user explicitly copies it into an AI tool.
-
-## How to use
-
-1. Paste a long AI conversation into the extension.
-2. Choose **Simple** or **Power User**.
-3. Choose **INITIAL** or **UPDATE**.
-4. Generate a Memory Curator prompt.
-5. Paste the prompt into ChatGPT, Gemini, Claude, or another AI.
-6. Review the structured memory proposal returned by the AI.
-
-## Architecture direction — HIRAKU Tools
-
-Memory Curator is now being defined as **Room 2** of a broader Human Agency workspace.
+Memory Curator is Room 2 of the HIRAKU Tools / Human Agency Workspace.
 
 > One house, four rooms.
 
-- **Chat Atlas** — see and understand what happened.
-- **Memory Curator** — choose what remains.
-- **Context Bridge** — choose what travels.
-- **Roundtable AI** — compare multiple AI outputs without surrendering human judgment.
+- **Chat Atlas** — see / understand
+- **Memory Curator** — choose what remains
+- **Context Bridge** — choose what travels
+- **Roundtable AI** — compare
+- **Human Gate** — decide
 
-The product may be integrated as one workspace, while module responsibilities remain strictly separated in the architecture.
+## MC-01 workflow
 
-The following v0.1 architecture drafts are tracked in this repository:
+1. Paste a long AI conversation, or capture selected text from a page.
+2. Choose **Simple / Power User** and **INITIAL / UPDATE**.
+3. Generate a Memory Curator prompt.
+4. Paste that prompt into ChatGPT, Claude, Gemini, or another AI.
+5. Paste the returned `context_items` JSON back into the extension.
+6. Each candidate is stored locally as a `PROPOSED` ContextItem.
+7. The human explicitly **Approves / Rejects** each item and chooses its Memory Policy.
+8. Approved ContextItems can be copied as structured JSON for future use.
+
+### UPDATE mode
+
+If the Existing Memory field is empty, the extension uses already human-approved local ContextItems from the selected Project as the existing memory input.
+
+Legacy memory can still be pasted into the field for gradual migration.
+
+## Human Gate
+
+MC-01 never auto-approves external AI output.
+
+- AI result → `proposed`
+- Human Approve → `approved`
+- Human Reject → `rejected`
+- Editing approved semantic content → `needs_review`
+
+AI-controlled `status`, approval timestamps, or approval metadata are not accepted as ContextItem authority fields.
+
+## Memory is not Context
+
+Memory Curator owns **what remains**.
+
+The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** will own transfer and handoff generation.
+
+## Local First / Privacy
+
+The extension itself does not call an AI API.
+
+Conversation text, drafts, and ContextItems are stored in `chrome.storage.local`. Nothing is sent to an external AI unless the user explicitly copies it into an AI service.
+
+## Human Agency Core v0.1
+
+The shared foundation includes:
 
 - [`Human Agency Core v0.1`](docs/HUMAN_AGENCY_CORE_v0.1.md)
 - [`Project Schema v0.1`](docs/PROJECT_SCHEMA_v0.1.md)
 - [`ContextItem Schema v0.1`](docs/CONTEXT_ITEM_SCHEMA_v0.1.md)
 - [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
+- [`MC-01 Migration Plan`](docs/MC01_PLAN_v0.1.md)
 
-### Migration note
-
-The current extension still includes legacy **Next Chat Handoff** responsibilities inside the Memory Curator prompt. Under the new architecture, those responsibilities are planned to move to **Context Bridge**. The current public runtime remains unchanged while the shared Core and module boundaries are specified first.
+The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, and Audit Log.
 
 ## Install on Chrome / Edge
 
@@ -72,13 +80,13 @@ The current extension still includes legacy **Next Chat Handoff** responsibiliti
 4. Click **Load unpacked**.
 5. Select the folder containing `manifest.json`.
 
-## Philosophy
+## Tests
 
-This is not a tool for producing answers.
+```bash
+node --test tests/*.test.mjs
+```
 
-It is a tool for helping a human decide what should be remembered, updated, reviewed, or forgotten after a long AI conversation.
-
-AI should not silently decide what becomes memory.
+GitHub Actions validates the Human Agency Core and the MC-01 contract.
 
 ## License
 
