@@ -2,7 +2,7 @@
 
 長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。
 
-現在の開発版は **MC-01 / v0.2.0** です。
+現在のMemory Curator開発版は **MC-01 / v0.2.0** です。
 
 ## 基本思想
 
@@ -54,7 +54,9 @@ Memory Curatorは「何を残すか」だけを担当します。
 
 旧版にあった **Next Chat Handoff / AI-specific Handoff** はMC-01のPrompt Contractから外しました。
 
-次のAIへ何を渡すかは、今後 **Context Bridge** が担当します。
+次のAIへ何を渡すかは **Context Bridge** が統治します。
+
+Room 3の最初のCore工程である **CB-01** では、ContextPackage Schema、専用State Machine、Revisionに結び付いたHuman Gate、Source Integrity確認、Freshness確認、Transfer Policy強制を実装します。CB-01の時点では、Context BridgeのブラウザUI、自動選択、AI別レンダリング、外部送信そのものはまだ実装しません。
 
 ## Local First / Privacy
 
@@ -71,8 +73,9 @@ Memory Curatorは「何を残すか」だけを担当します。
 - [`ContextItem Schema v0.1`](docs/CONTEXT_ITEM_SCHEMA_v0.1.md)
 - [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
 - [`MC-01 Migration Plan`](docs/MC01_PLAN_v0.1.md)
+- [`CB-01 ContextPackage / State Machine / Human Gate`](docs/CB01_CONTEXT_PACKAGE_v0.1.md)
 
-Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Logが含まれます。
+Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、CB-01 ContextPackage Lifecycle基盤が含まれます。
 
 ## インストール方法 Chrome / Edge
 
@@ -88,7 +91,7 @@ Reference Coreには、Project Store、ContextItem Store、Provenance、Memory /
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency CoreとMC-01 Contractを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Coreを検証します。
 
 ## ライセンス
 
