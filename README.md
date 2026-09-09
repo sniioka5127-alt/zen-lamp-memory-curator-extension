@@ -54,7 +54,12 @@ Memory Curator owns **what remains**.
 
 The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** owns transfer and handoff governance.
 
-The first Room 3 Core phase, **CB-01**, now defines the canonical ContextPackage schema, its separate state machine, revision-bound Human Gate, source-integrity checks, freshness acknowledgment, and transfer-policy enforcement. CB-01 does not yet provide the Context Bridge browser UI, automatic selection, provider rendering, or outbound transfer.
+Room 3 now has two implemented Core phases:
+
+- **CB-01** defines the canonical ContextPackage schema, separate lifecycle, revision-bound Human Gate, source-integrity checks, freshness acknowledgment, and transfer-policy enforcement.
+- **CB-02** adds a local deterministic Context Selection Engine that ranks eligible approved ContextItems for a stated purpose while remaining strictly `proposal_only`.
+
+CB-02 does not auto-select authority, call an AI API, render provider-specific prompts, or perform outbound transfer. Final transfer readiness remains governed by CB-01 Human Gate.
 
 ## Local First / Privacy
 
@@ -72,8 +77,9 @@ The shared foundation includes:
 - [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
 - [`MC-01 Migration Plan`](docs/MC01_PLAN_v0.1.md)
 - [`CB-01 ContextPackage / State Machine / Human Gate`](docs/CB01_CONTEXT_PACKAGE_v0.1.md)
+- [`CB-02 Context Selection Engine`](docs/CB02_CONTEXT_SELECTION_ENGINE_v0.1.md)
 
-The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, and the CB-01 ContextPackage lifecycle foundation.
+The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, ContextPackage governance, and proposal-only context selection.
 
 ## Install on Chrome / Edge
 
