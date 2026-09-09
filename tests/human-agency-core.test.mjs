@@ -31,10 +31,29 @@ test("HC-02..05: project, ContextItem, governance and audit work together", asyn
   const projects = new ProjectStore(adapter, { auditLog: audit, clock });
   const items = new ContextItemStore(adapter, { auditLog: audit, clock });
 
+  await assert.rejects(
+    () => projects.create({ name: "AI-owned project" }, { actor: ai }),
+    /Human Gate required/
+  );
+
   const project = await projects.create({ name: "HIRAKU Tools Test" }, { actor: human });
   assert.equal(project.status, "active");
   assert.equal(project.settings.local_first, true);
   assert.equal(project.settings.human_gate_required, true);
+
+  await assert.rejects(
+    () => projects.update(
+      project.id,
+      { settings: { human_gate_required: false } },
+      { actor: human }
+    ),
+    /human_gate_required cannot be disabled/
+  );
+
+  await assert.rejects(
+    () => projects.setStatus(project.id, "paused", { actor: ai }),
+    /Human Gate required/
+  );
 
   const item = await items.create({
     project_id: project.id,
