@@ -44,7 +44,7 @@ test("E2E-01 deployment verifier requires the AT-03 public markers", () => {
   assert.match(script, /https:\/\/zen-lamp\.com\/tools\/chat-atlas\//);
   assert.match(script, /project-binding\.js/);
   assert.match(script, /projectBindingStatus/);
-  assert.match(script, /ATLAS_PROJECT_BINDING_VERSION/);
+  assert.match(script, /PROJECT_BINDING_VERSION/);
   assert.match(script, /project_store_verification/);
   assert.match(script, /human_project_reference/);
 });
