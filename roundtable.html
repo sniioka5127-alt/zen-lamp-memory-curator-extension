@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HIRAKU Roundtable AI</title>
+  <link rel="stylesheet" href="context-bridge.css" />
+  <link rel="stylesheet" href="roundtable.css" />
+</head>
+<body data-rt06="roundtable-browser-runtime">
+  <main class="workspace">
+    <header class="hero">
+      <div class="mark">◯</div>
+      <div>
+        <p class="eyebrow">HIRAKU Tools · Room 4</p>
+        <h1>Roundtable AI</h1>
+        <p>Compare multiple AI responses from the same Human-approved context. Human interpretation remains separate from truth and final decision.</p>
+      </div>
+    </header>
+
+    <section class="notice">
+      <strong>Local-first + manual-only.</strong> RT-06 orchestrates RT-01 through RT-05 in the browser. It does not call a provider API, auto-send prompts, majority-vote, rank models, or make the Human decision.
+    </section>
+
+    <nav class="progress" aria-label="Roundtable workflow">
+      <span data-progress="source">Source</span>
+      <span data-progress="rt01">RT-01</span>
+      <span data-progress="rt02">RT-02</span>
+      <span data-progress="rt03">RT-03</span>
+      <span data-progress="rt04">RT-04</span>
+      <span data-progress="rt05">RT-05</span>
+    </nav>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><span class="step">0</span><h2>Approved Room 3 source</h2></div>
+        <button id="refreshSources" type="button" class="small">Refresh sources</button>
+      </div>
+      <p class="muted">Only approved Roundtable ContextPackages with an approved TransferView can start Room 4.</p>
+      <div class="grid two">
+        <label>ContextPackage<select id="packageSelect"></select></label>
+        <label>TransferView<select id="viewSelect"></select></label>
+      </div>
+      <div class="actions"><button id="loadSource" type="button" class="primary">Load approved source</button></div>
+      <div id="sourceDetail" class="detail"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">1</span><h2>RT-01 · Canonical Context Input</h2></div><span id="rt01Status" class="status">Waiting for source</span></div>
+      <p class="muted">RT-06 re-renders from the same approved ContextPackage + TransferView and prepares a fresh canonical input. Prior CB-05 handoff receipts are not claimed as evidence for this fresh rendering.</p>
+      <div class="actions"><button id="prepareInput" type="button" class="primary">Prepare canonical input</button></div>
+      <div id="providerPromptList" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">2</span><h2>RT-02 · Provider Response Capture</h2></div><span id="rt02Status" class="status">No responses captured</span></div>
+      <p class="muted">Paste each provider's response exactly as returned. Capture is Human-attested evidence only; provider origin remains unverified.</p>
+      <div id="responseCaptureList" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">3</span><h2>RT-03 · Response Comparison</h2></div><span id="rt03Status" class="status">Waiting for all providers</span></div>
+      <div class="actions"><button id="compareResponses" type="button" class="primary">Build disagreement matrix</button></div>
+      <div id="comparisonDetail" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">4</span><h2>RT-04 · Claim / Assumption / Conflict Extraction</h2></div><span id="rt04Status" class="status">Waiting for comparison</span></div>
+      <p class="muted">The extraction prompt may be copied to an external AI manually. Its result returns only as an interpretive proposal and must cite exact RT-02 evidence.</p>
+      <div class="actions">
+        <button id="buildExtractionPrompt" type="button" class="primary">Build extraction prompt</button>
+        <button id="copyExtractionPrompt" type="button">Copy extraction prompt</button>
+      </div>
+      <label>Governed RT-04 prompt<textarea id="extractionPrompt" readonly></textarea></label>
+      <label>External AI JSON result<textarea id="extractionResult" placeholder="Paste the RT-04 JSON proposal here."></textarea></label>
+      <div class="actions"><button id="importExtraction" type="button">Import interpretive proposal</button></div>
+      <div id="extractionDetail" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">5</span><h2>RT-05 · Interpretive Review / Human Gate</h2></div><span id="rt05Status" class="status">Waiting for RT-04</span></div>
+      <p class="muted">Accept means “keep for downstream deliberation,” not “true.” A Conflict acceptance does not select a winning side.</p>
+      <div class="actions">
+        <button id="startReview" type="button" class="primary">Start Human review</button>
+        <button id="finalizeReview" type="button">Finalize Human review</button>
+      </div>
+      <div id="reviewList" class="card-list"></div>
+      <div id="reviewSummary" class="detail"></div>
+    </section>
+
+    <section class="panel compact-panel">
+      <div class="panel-head"><div><h2>Runtime controls</h2></div></div>
+      <div class="actions">
+        <button id="resetRuntime" type="button" class="ghost">Reset Room 4 runtime</button>
+      </div>
+      <p id="flash" class="summary" aria-live="polite"></p>
+    </section>
+
+    <footer>
+      <p><strong>Room 4 — Roundtable AI:</strong> same context → raw evidence → descriptive comparison → proposed interpretation → Human review.</p>
+      <p class="muted">RT-01 → RT-06 · No majority-as-truth · No final decision in Room 4.</p>
+    </footer>
+  </main>
+  <script type="module" src="roundtable.js"></script>
+</body>
+</html>

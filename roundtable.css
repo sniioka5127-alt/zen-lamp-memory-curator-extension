@@ -1,0 +1,18 @@
+.workspace textarea[readonly] { min-height: 180px; }
+.provider-prompt { min-height: 220px; }
+.response-input { min-height: 180px; }
+.card .evidence { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .88rem; background: rgba(0,0,0,.04); border-radius: 10px; padding: 10px; }
+.review-grid { display: grid; gap: 10px; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.review-actions label { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+.matrix { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.matrix th, .matrix td { border-bottom: 1px solid rgba(0,0,0,.1); padding: 8px; text-align: left; vertical-align: top; }
+.matrix th { font-weight: 700; }
+.status.good { color: #176f3b; }
+.status.warn { color: #8a5b00; }
+.status.error { color: #9f2424; }
+[data-tone="error"] { color: #9f2424; }
+@media (max-width: 720px) {
+  .matrix { font-size: .82rem; }
+  .matrix th, .matrix td { padding: 6px; }
+}
