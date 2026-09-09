@@ -113,7 +113,11 @@ export const AUDIT_ACTION = Object.freeze([
   "roundtable_input_prepared",
   "roundtable_response_captured",
   "roundtable_responses_compared",
-  "roundtable_interpretive_extraction_proposed"
+  "roundtable_interpretive_extraction_proposed",
+  "roundtable_interpretive_review_started",
+  "roundtable_interpretive_review_item_recorded",
+  "roundtable_interpretive_review_finalized",
+  "roundtable_interpretive_review_revoked"
 ]);
 
 export function assertRequiredString(value, name) {
