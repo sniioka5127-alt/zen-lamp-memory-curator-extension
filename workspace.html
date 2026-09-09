@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HIRAKU One House Workspace</title>
+  <link rel="stylesheet" href="workspace.css" />
+</head>
+<body data-ws01="integrated-project-workspace">
+  <main class="workspace-shell">
+    <header class="hero">
+      <div class="mark">◯</div>
+      <div>
+        <p class="eyebrow">HIRAKU Tools · One House</p>
+        <h1>Integrated Project Workspace</h1>
+        <p>One Human-owned Project. Four rooms. One Human Decision boundary.</p>
+      </div>
+    </header>
+
+    <section class="notice">
+      <strong>Product integrated. Architecture separated.</strong>
+      The workspace coordinates Project identity and navigation. It does not merge module authority, auto-promote AI output, auto-transfer context, majority-vote, or execute Human decisions.
+    </section>
+
+    <section class="project-panel panel">
+      <div class="panel-head">
+        <div>
+          <span class="step">P</span>
+          <div>
+            <p class="eyebrow">Human Project</p>
+            <h2>Project Center</h2>
+          </div>
+        </div>
+        <button id="refreshWorkspace" type="button" class="small">Refresh</button>
+      </div>
+
+      <div class="grid project-grid">
+        <label>
+          Current Project
+          <select id="projectSelect"></select>
+        </label>
+        <label>
+          Status
+          <select id="projectStatus">
+            <option value="active">active</option>
+            <option value="paused">paused</option>
+            <option value="completed">completed</option>
+          </select>
+        </label>
+        <div class="project-actions">
+          <button id="applyProjectStatus" type="button">Apply status</button>
+        </div>
+      </div>
+
+      <div class="create-row">
+        <label>
+          New Project
+          <input id="newProjectName" type="text" placeholder="Project name" />
+        </label>
+        <label>
+          Description
+          <input id="newProjectDescription" type="text" placeholder="Optional" />
+        </label>
+        <button id="createProject" type="button" class="primary">Create Human Project</button>
+      </div>
+
+      <div id="projectSummary" class="project-summary"></div>
+    </section>
+
+    <section class="flow-strip" aria-label="One House flow">
+      <span>See</span><b>→</b><span>Remember</span><b>→</b><span>Transfer</span><b>→</b><span>Compare</span><b>→</b><strong>Decide</strong>
+    </section>
+
+    <section class="rooms-grid" aria-label="Four rooms">
+      <article class="room-card" data-room="atlas">
+        <div class="room-number">01</div>
+        <p class="room-role">See / Understand</p>
+        <h2>Chat Atlas</h2>
+        <p>Map a conversation before deciding what deserves to continue.</p>
+        <div id="atlasMetrics" class="metrics"></div>
+        <div class="room-note">AT runtime remains separately versioned. WS-01 links to it without copying its authority into the shared Core.</div>
+        <button id="openAtlas" type="button">Open Chat Atlas repository</button>
+      </article>
+
+      <article class="room-card" data-room="memory">
+        <div class="room-number">02</div>
+        <p class="room-role">Remember</p>
+        <h2>Memory Curator</h2>
+        <p>AI proposes memory candidates. Human decides what remains.</p>
+        <div id="memoryMetrics" class="metrics"></div>
+        <button id="openMemory" type="button" class="primary">Open Memory Curator</button>
+      </article>
+
+      <article class="room-card" data-room="bridge">
+        <div class="room-number">03</div>
+        <p class="room-role">Transfer</p>
+        <h2>Context Bridge</h2>
+        <p>Choose, reduce, approve, render, and manually hand off governed context.</p>
+        <div id="bridgeMetrics" class="metrics"></div>
+        <button id="openBridge" type="button" class="primary">Open Context Bridge</button>
+      </article>
+
+      <article class="room-card" data-room="roundtable">
+        <div class="room-number">04</div>
+        <p class="room-role">Compare</p>
+        <h2>Roundtable AI</h2>
+        <p>Compare multiple provider responses from the same approved context without converting agreement into truth.</p>
+        <div id="roundtableMetrics" class="metrics"></div>
+        <button id="openRoundtable" type="button" class="primary">Open Roundtable AI</button>
+      </article>
+    </section>
+
+    <section class="human-gate panel" data-human-gate="system-boundary">
+      <div class="gate-line"><span>AI comparison ends here</span><strong>Human Gate</strong></div>
+      <div class="gate-content">
+        <div>
+          <p class="eyebrow">Decide</p>
+          <h2>Human Decision Gate</h2>
+          <p>Human judgment is recorded after Roundtable review. Finalized judgment is not automatically factual verification and is not execution.</p>
+        </div>
+        <div id="decisionMetrics" class="metrics gate-metrics"></div>
+        <button id="openDecisionGate" type="button" class="primary">Open Decision Gate</button>
+      </div>
+    </section>
+
+    <section class="panel compact-panel">
+      <div class="panel-head"><div><h2>Workspace boundary</h2></div></div>
+      <p class="muted">WS-01 stores only the selected Project ID as lightweight workspace state. Canonical ContextItems, ContextPackages, evidence, reviews, and Human Decision Records stay in their governed Core stores.</p>
+      <p id="flash" class="flash" aria-live="polite"></p>
+    </section>
+
+    <footer>
+      <p><strong>One House:</strong> Project is the Human-owned center; providers and chats are resources inside the Project, not the Project itself.</p>
+      <p class="muted">WS-01 · Local First · Human Gate required · No automatic provider transport.</p>
+    </footer>
+  </main>
+  <script type="module" src="workspace.js"></script>
+</body>
+</html>
