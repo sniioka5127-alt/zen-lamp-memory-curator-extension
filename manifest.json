@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ZEN LAMP Memory Curator",
-  "version": "0.1.0",
-  "description": "A local prompt helper for turning long AI conversations into usable memory.",
+  "version": "0.2.0",
+  "description": "A local-first Human Agency helper for turning long AI conversations into human-reviewed ContextItems.",
   "action": {
     "default_popup": "popup.html",
     "default_title": "ZEN LAMP Memory Curator",
