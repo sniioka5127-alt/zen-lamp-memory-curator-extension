@@ -24,6 +24,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Run E2E-01 contract test
+        run: node --test tests/e2e-01-contract.test.mjs
       - name: Show browser version
         run: |
           if command -v google-chrome-stable >/dev/null 2>&1; then google-chrome-stable --version; \
