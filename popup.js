@@ -116,6 +116,10 @@ async function copyText(text, successMessage) {
   flash(successMessage);
 }
 
+async function copyOutput() {
+  await copyText(outputEl.value, "Curator prompt copied.");
+}
+
 async function getActiveTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   return tabs[0];
