@@ -1,0 +1,33 @@
+name: HG-02 Apply Browser Integration
+
+on:
+  push:
+    branches:
+      - hg-02-decision-gate-browser
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Apply HG-02 migration
+        run: node scripts/apply-hg02-browser-integration.mjs
+      - name: Commit generated integration changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add roundtable.html roundtable.js roundtable.css manifest.json tests/roundtable-rt06-browser.test.mjs README.md README.ja.md
+          if git diff --cached --quiet; then
+            echo "No integration changes to commit."
+          else
+            git commit -m "HG-02: integrate Human Decision Gate into Roundtable browser"
+            git push origin HEAD:hg-02-decision-gate-browser
+          fi
