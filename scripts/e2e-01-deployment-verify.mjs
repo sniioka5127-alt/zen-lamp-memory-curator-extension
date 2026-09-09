@@ -71,7 +71,7 @@ async function main() {
     }));
 
     const assetMarkers = [
-      'ATLAS_PROJECT_BINDING_VERSION',
+      'PROJECT_BINDING_VERSION',
       '"AT-03"',
       'projectIdFromFragment',
       'resolveProjectBinding',
