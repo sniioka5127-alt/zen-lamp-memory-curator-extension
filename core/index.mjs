@@ -11,3 +11,4 @@ export * from "./context-selection-engine.mjs";
 export * from "./context-redaction-layer.mjs";
 export * from "./context-renderer.mjs";
 export * from "./outbound-handoff-boundary.mjs";
+export * from "./roundtable-canonical-input.mjs";
