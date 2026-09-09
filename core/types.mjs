@@ -109,7 +109,8 @@ export const AUDIT_ACTION = Object.freeze([
   "context_rendered",
   "transfer_attempt",
   "transfer_approved",
-  "transfer_denied"
+  "transfer_denied",
+  "roundtable_input_prepared"
 ]);
 
 export function assertRequiredString(value, name) {
