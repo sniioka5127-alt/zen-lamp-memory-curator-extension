@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較層まで統合しています。
+長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較／解釈提案層まで統合しています。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-03 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-04 / v0.3.0** です。
 
 ## 基本思想
 
@@ -129,6 +129,37 @@ interpretive_review.required = true
 
 **多数派であることを真実やHuman Authorityへ昇格させない**ことを、RT-03の不変条件にします。
 
+### RT-04 — Claim / Assumption / Conflict Extraction
+
+RT-04は、Room 4で初めて意味解釈を扱う層です。ただし、出力はあくまで**解釈候補**です。
+
+RT-01 / RT-02 / RT-03の正規な証跡チェーンから外部解釈AI向けのGoverned Promptを生成し、返ってきたJSONを契約に沿って取り込みます。拡張機能自身がAI APIを自動実行するわけではありません。
+
+取り込まれたRT-04 Outputは、
+
+- `status = proposed_not_human_reviewed`
+- `authority = interpretive_proposal_only`
+- `source_authenticity = unverified_interpretive_output`
+- `human_review.required = true`
+- `human_review.state = pending`
+
+です。
+
+各Claim / Assumptionには、対応ProviderのRT-02 Raw Responseから**完全一致する原文Quoteを最低1つ**付ける必要があります。Core側がQuoteをRaw Response内で照合し、Response ID・文字位置を自分で確定します。存在しないQuoteは拒否します。同じQuoteが複数回ある場合は `occurrence` 指定が必須です。
+
+Conflict候補は最低2Providerを含み、それぞれのProvider Sideは**同じProvider自身のEvidence-bound Claim / Assumption**だけを参照できます。
+
+Conflictは必ず、
+
+- `resolution = unresolved`
+- `truth_status = not_evaluated`
+
+のままです。
+
+RT-04では `winner`、`decision`、`truth`、`model_ranking`、`recommended_provider`、`final_answer` などのフィールドを禁止します。
+
+**3モデル一致でも真実にはしない。少数意見も落とさない。解釈候補はHuman Reviewを通す。** これをRT-04の基本境界とします。
+
 ## Local First / Privacy
 
 この拡張機能自身はAI APIを呼び出しません。
@@ -137,7 +168,7 @@ interpretive_review.required = true
 
 CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
 
-RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存します。RT-03はそのGoverned ResponseからRuntime Comparisonを生成しますが、v0.1では新しい永続Comparison Storeは追加しません。Audit LogにもProvider Response本文を重複保存しません。
+RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存します。RT-03はそのGoverned ResponseからRuntime Comparisonを生成し、RT-04はRuntime Interpretive Proposalを生成します。RT-04のAudit LogにはClaim本文、Assumption本文、Conflict説明、Evidence Quote、Raw Responseを重複保存せず、ID・Fingerprint・件数などのメタデータだけを記録します。
 
 ## Human Agency Core v0.1
 
@@ -157,6 +188,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 - [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
 - [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
+- [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -167,7 +199,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 5. `manifest.json` が入っているフォルダを選択する。
 6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
 
-RT-01〜RT-03は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
+RT-01〜RT-04は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
 
 ## テスト
 
@@ -175,7 +207,7 @@ RT-01〜RT-03は現時点ではCore Contractです。Room 4専用Browser Runtime
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01〜RT-03のRoundtable Contractを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01〜RT-04のRoundtable Contractを検証します。
 
 ## ライセンス
 
