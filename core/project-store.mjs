@@ -1,6 +1,7 @@
 import {
   PROJECT_STATUS,
   SCHEMA_VERSION,
+  TRANSFER_POLICY,
   assertOneOf,
   assertRequiredString,
   deepClone,
@@ -24,6 +25,7 @@ export class ProjectStore {
     default_language = "ja",
     default_transfer_policy = "manual_only"
   }, { actor = { type: "human" } } = {}) {
+    assertOneOf(default_transfer_policy, TRANSFER_POLICY, "default_transfer_policy");
     const timestamp = nowIso(this.clock);
     const project = {
       schema_version: SCHEMA_VERSION,
@@ -83,6 +85,13 @@ export class ProjectStore {
       Object.entries(patch || {}).filter(([key]) => allowed.includes(key))
     );
     if (safePatch.name != null) safePatch.name = assertRequiredString(safePatch.name, "name");
+    if (safePatch.privacy?.default_transfer_policy != null) {
+      assertOneOf(
+        safePatch.privacy.default_transfer_policy,
+        TRANSFER_POLICY,
+        "privacy.default_transfer_policy"
+      );
+    }
 
     const after = {
       ...before,
