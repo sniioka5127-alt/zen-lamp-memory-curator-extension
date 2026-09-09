@@ -65,7 +65,7 @@ async function prepareTestExtension(testRoot) {
 
   return {
     extensionDir,
-    extensionId: extensionIdFromPublicKey(publicKeyDer)
+    expectedExtensionId: extensionIdFromPublicKey(publicKeyDer)
   };
 }
 
@@ -172,6 +172,18 @@ async function waitFor(cdp, sessionId, expression, label, timeoutMs = 15000) {
   throw new Error(`Timeout waiting for ${label}. Last result: ${String(last)}`);
 }
 
+async function discoverLoadedExtensionId(cdp) {
+  const page = await attachPage(cdp, "chrome://extensions/");
+  const expression = `(() => {
+    const manager = document.querySelector("extensions-manager");
+    const list = manager?.shadowRoot?.querySelector("extensions-item-list");
+    const items = list?.shadowRoot?.querySelectorAll("extensions-item") || [];
+    const hit = Array.from(items).find((item) => item.data?.name === "ZEN LAMP Memory Curator");
+    return hit?.data?.id || "";
+  })()`;
+  return waitFor(cdp, page.sessionId, expression, "loaded ZEN LAMP extension ID", 20000);
+}
+
 async function listTargets(cdp) {
   const { targetInfos } = await cdp.send("Target.getTargets");
   return targetInfos || [];
@@ -208,7 +220,7 @@ async function main() {
   const testRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "hiraku-e2e01-"));
   const profileDir = path.join(testRoot, "profile");
   await fsp.mkdir(profileDir, { recursive: true });
-  const { extensionDir, extensionId } = await prepareTestExtension(testRoot);
+  const { extensionDir, expectedExtensionId } = await prepareTestExtension(testRoot);
 
   const chromeArgs = [
     "--no-sandbox",
@@ -235,7 +247,7 @@ async function main() {
     version: "E2E-01",
     scope: "One House real Chromium extension browser smoke",
     chrome,
-    extension_id: extensionId,
+    expected_extension_id: expectedExtensionId,
     started_at: new Date().toISOString(),
     checks: [],
     status: "running"
@@ -248,7 +260,13 @@ async function main() {
 
   try {
     await cdp.send("Browser.getVersion");
-    record("temporary unpacked extension loaded with deterministic test key", { extension_id: extensionId });
+    const extensionId = await discoverLoadedExtensionId(cdp);
+    report.extension_id = extensionId;
+    record("temporary unpacked extension is visible in chrome://extensions", {
+      extension_id: extensionId,
+      expected_extension_id: expectedExtensionId,
+      key_id_match: extensionId === expectedExtensionId
+    });
 
     const workspaceUrl = `chrome-extension://${extensionId}/workspace.html`;
     const workspace = await attachPage(cdp, workspaceUrl);
