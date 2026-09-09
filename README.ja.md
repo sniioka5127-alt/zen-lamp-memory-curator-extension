@@ -56,15 +56,16 @@ Memory Curatorは「何を残すか」だけを担当します。
 
 次のAIへ何を渡すかは **Context Bridge** が統治します。
 
-Room 3では現在、3つのCore工程を実装しています。
+Room 3では現在、4つのCore工程を実装しています。
 
 - **CB-01**：ContextPackage Schema、専用Lifecycle、Revisionに結び付いたHuman Gate、Source Integrity確認、Freshness確認、Transfer Policy強制。
 - **CB-02**：承認済みContextItemsを目的に応じてローカル・決定論的に順位付けするContext Selection Engine。出力は厳格に `proposal_only`。
 - **CB-03**：Exclusion / Redaction Layer。検出結果そのものには権限を持たせず、人間が「伏せる／明示的に残す／項目全体を除外する」を決めて初めてTransferViewを承認できます。
+- **CB-04**：Context Renderer。1つのHuman承認済みTransferViewから Generic / GPT / Claude / Gemini 向けの表示形式を生成しますが、Canonical JSONとSemantic Fingerprintは全Providerで同一に保ちます。
 
 CB-03のローカル検出は、メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、今回だけ指定する完全一致文字列を補助的に扱います。また、人間が範囲を指定するManual Redactionを用意します。**氏名や意味依存の個人情報を完全に自動判定できるとは扱いません。** Redaction Planには検出した元文字列そのものを複製せず、項目全体を除外した場合もTransferViewへ除外本文をコピーしません。
 
-Context Bridgeは引き続きAI APIを呼ばず、外部送信も行いません。AI別レンダリングは次工程です。
+CB-04ではProviderごとに見た目を変えても、意味内容は変えません。Roundtable向けには、全Providerで同一のCanonical Contextが使われていることを検証します。CB-04自身はAI APIを呼ばず、外部送信も行わず、生成結果は `rendered_not_sent` のままです。
 
 ## Local First / Privacy
 
@@ -84,8 +85,9 @@ Context Bridgeは引き続きAI APIを呼ばず、外部送信も行いません
 - [`CB-01 ContextPackage / State Machine / Human Gate`](docs/CB01_CONTEXT_PACKAGE_v0.1.md)
 - [`CB-02 Context Selection Engine`](docs/CB02_CONTEXT_SELECTION_ENGINE_v0.1.md)
 - [`CB-03 Exclusion / Redaction Layer`](docs/CB03_EXCLUSION_REDACTION_v0.1.md)
+- [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
 
-Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、ContextPackage統治、proposal-onlyのContext選択、人間が承認したPrivacy-reduced TransferViewが含まれます。
+Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、ContextPackage統治、proposal-onlyのContext選択、人間が承認したPrivacy-reduced TransferView、Canonical Provider Renderingが含まれます。
 
 ## インストール方法 Chrome / Edge
 
