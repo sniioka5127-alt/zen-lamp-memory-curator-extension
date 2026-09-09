@@ -15,3 +15,4 @@ export * from "./roundtable-canonical-input.mjs";
 export * from "./roundtable-response-store.mjs";
 export * from "./roundtable-comparison-engine.mjs";
 export * from "./roundtable-interpretive-extraction.mjs";
+export * from "./roundtable-interpretive-review-store.mjs";
