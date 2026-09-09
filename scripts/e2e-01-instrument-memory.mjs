@@ -1,0 +1,8 @@
+import fs from "node:fs";
+const path = "scripts/e2e-01-browser-smoke.mjs";
+let source = fs.readFileSync(path, "utf8");
+const needle = '    const memorySession = await attachExistingTarget(cdp, memoryTarget);\n    await waitFor(cdp, memorySession, `document.readyState === "complete" && document.getElementById("projectName")?.readOnly === true`, "Memory Curator Project binding");';
+const replacement = `    const memorySession = await attachExistingTarget(cdp, memoryTarget);\n    await waitFor(cdp, memorySession, \`document.readyState === "complete" && !!document.getElementById("projectName")\`, "Memory Curator DOM");\n    await sleep(1000);\n    const memoryDiagnostic = await evaluate(cdp, memorySession, \`(async () => ({\n      href: location.href,\n      readyState: document.readyState,\n      projectValue: document.getElementById("projectName")?.value || null,\n      projectReadOnly: document.getElementById("projectName")?.readOnly ?? null,\n      projectTitle: document.getElementById("projectName")?.title || null,\n      boundParam: new URLSearchParams(location.search).get("project"),\n      storedProject: (await chrome.storage.local.get("project:" + new URLSearchParams(location.search).get("project")))["project:" + new URLSearchParams(location.search).get("project")] || null\n    }))()\`);\n    console.log("MEMORY_DIAGNOSTIC " + JSON.stringify(memoryDiagnostic));\n    await waitFor(cdp, memorySession, \`document.getElementById("projectName")?.readOnly === true\`, "Memory Curator Project binding");`;
+if (!source.includes(needle)) throw new Error("instrumentation anchor not found");
+source = source.replace(needle, replacement);
+fs.writeFileSync(path, source);
