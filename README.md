@@ -2,103 +2,83 @@
 
 A simple local browser extension for turning long AI conversations into usable memory.
 
-This is an early personal PoC from the ZEN LAMP PROJECT.
-
-## Screenshot
-
-<img src="assets/screenshot-extension-en.png" alt="ZEN LAMP Memory Curator Extension screenshot" width="420">
-
-The extension generates prompts only. It does not process the conversation with an AI by itself.
+This repository contains an early proof of concept from the ZEN LAMP PROJECT.
 
 ## What it does
 
-Long AI chats often contain a mix of:
+Long AI conversations contain a mixture of:
 
 - fixed rules
 - project context
-- useful discoveries
+- discoveries
 - temporary notes
-- ideas that should be dropped
-- next-chat handoff material
+- information that should not be carried forward
+- handoff material for the next chat
 
-Normal summaries are not enough, because the goal is not to preserve everything.
+A normal summary is not enough.
 
-The goal is to decide what should be carried forward.
+The goal is not to preserve everything.
 
-**More memory is not enough. We need memory governance.**
+**The goal is to help a human decide what deserves to continue.**
+
+What we need is not simply more memory. We need memory governance.
 
 ## Privacy
 
-This extension does **not** send your conversation data to any server.
+This extension does not send conversation data to any external server.
 
-It does **not** call any AI API.
+It does not call an AI API.
 
-All text stays in your browser unless you manually copy it into an AI tool.
+Text remains in the browser unless the user explicitly copies it into an AI tool.
 
-## How it works
+## How to use
 
 1. Paste a long AI conversation into the extension.
-2. Choose **Simple** or **Power User** mode.
-3. Choose **INITIAL** or **UPDATE** mode.
+2. Choose **Simple** or **Power User**.
+3. Choose **INITIAL** or **UPDATE**.
 4. Generate a Memory Curator prompt.
-5. Copy the prompt into ChatGPT, Gemini, Claude, or another AI tool.
-6. The AI returns a structured memory output.
+5. Paste the prompt into ChatGPT, Gemini, Claude, or another AI.
+6. Review the structured memory proposal returned by the AI.
 
-## Modes
+## Architecture direction — HIRAKU Tools
 
-### Simple
+Memory Curator is now being defined as **Room 2** of a broader Human Agency workspace.
 
-For everyday use.
+> One house, four rooms.
 
-Simple mode merges fixed rules, project context, and discoveries into a single **Keep** bucket. Choose **Power User** if you need finer separation.
+- **Chat Atlas** — see and understand what happened.
+- **Memory Curator** — choose what remains.
+- **Context Bridge** — choose what travels.
+- **Roundtable AI** — compare multiple AI outputs without surrendering human judgment.
 
-Outputs:
+The product may be integrated as one workspace, while module responsibilities remain strictly separated in the architecture.
 
-- Keep
-- Maybe
-- Drop
-- Next Chat Handoff
+The following v0.1 architecture drafts are tracked in this repository:
 
-### Power User
+- [`Human Agency Core v0.1`](docs/HUMAN_AGENCY_CORE_v0.1.md)
+- [`Project Schema v0.1`](docs/PROJECT_SCHEMA_v0.1.md)
+- [`ContextItem Schema v0.1`](docs/CONTEXT_ITEM_SCHEMA_v0.1.md)
+- [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
 
-For long projects, writing, research, policy work, product design, and multi-model workflows.
+### Migration note
 
-Outputs may include:
+The current extension still includes legacy **Next Chat Handoff** responsibilities inside the Memory Curator prompt. Under the new architecture, those responsibilities are planned to move to **Context Bridge**. The current public runtime remains unchanged while the shared Core and module boundaries are specified first.
 
-- Fixed Rules
-- Project Context
-- Voice / Style Anchors
-- Anti-patterns / Avoid
-- Discoveries
-- Temporary Notes
-- Decisions Pending
-- Do Not Carry Forward
-- Freshness / Review Needed
-- Next Chat Handoff
-- Optional AI-specific Handoffs
-- Questions to Revisit
-- Promotions / Demotions
-- Change Log
+## Install on Chrome / Edge
 
-## Installation for Chrome / Edge
-
-1. Download the latest release from the Releases section.
-2. Download `Source code (zip)`.
-3. Unzip the file.
-4. Open `chrome://extensions/` or `edge://extensions/`.
-5. Turn on Developer mode.
-6. Click **Load unpacked**.
-7. Select the extracted folder containing `manifest.json`.
+1. Download or clone this repository.
+2. Open `chrome://extensions/` or `edge://extensions/`.
+3. Turn on Developer mode.
+4. Click **Load unpacked**.
+5. Select the folder containing `manifest.json`.
 
 ## Philosophy
 
-This tool is not an answer machine.
+This is not a tool for producing answers.
 
-It is a small prompt helper for deciding what should be remembered, updated, carried forward, or forgotten.
+It is a tool for helping a human decide what should be remembered, updated, reviewed, or forgotten after a long AI conversation.
 
-AI should not silently decide what matters.
-
-The human should choose.
+AI should not silently decide what becomes memory.
 
 ## License
 
