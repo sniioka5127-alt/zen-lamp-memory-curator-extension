@@ -2,7 +2,7 @@
 
 A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**.
 
-Current development version: **MC-01 / v0.2.0**.
+Current Memory Curator development version: **MC-01 / v0.2.0**.
 
 ## Principle
 
@@ -52,7 +52,9 @@ AI-controlled `status`, approval timestamps, or approval metadata are not accept
 
 Memory Curator owns **what remains**.
 
-The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** will own transfer and handoff generation.
+The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** owns transfer and handoff governance.
+
+The first Room 3 Core phase, **CB-01**, now defines the canonical ContextPackage schema, its separate state machine, revision-bound Human Gate, source-integrity checks, freshness acknowledgment, and transfer-policy enforcement. CB-01 does not yet provide the Context Bridge browser UI, automatic selection, provider rendering, or outbound transfer.
 
 ## Local First / Privacy
 
@@ -69,8 +71,9 @@ The shared foundation includes:
 - [`ContextItem Schema v0.1`](docs/CONTEXT_ITEM_SCHEMA_v0.1.md)
 - [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
 - [`MC-01 Migration Plan`](docs/MC01_PLAN_v0.1.md)
+- [`CB-01 ContextPackage / State Machine / Human Gate`](docs/CB01_CONTEXT_PACKAGE_v0.1.md)
 
-The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, and Audit Log.
+The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, and the CB-01 ContextPackage lifecycle foundation.
 
 ## Install on Chrome / Edge
 
@@ -86,7 +89,7 @@ The reference Core includes Project Store, ContextItem Store, Provenance, Memory
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core and the MC-01 contract.
+GitHub Actions validates the Human Agency Core, MC-01 contract, and Context Bridge Core tests.
 
 ## License
 
