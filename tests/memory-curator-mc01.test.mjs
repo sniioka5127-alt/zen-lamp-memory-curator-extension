@@ -38,7 +38,7 @@ test("MC-01 prompt excludes handoff responsibility and requires machine-readable
   assert.match(prompt, /context_items/);
   assert.match(prompt, /Do NOT generate \"Next Chat Handoff\"/);
   assert.match(prompt, /Human Authority rule/);
-  assert.match(prompt, /transfer_policy must default to \"manual_only\"/);
+  assert.match(prompt, /transfer_policy must be \"manual_only\"/);
 });
 
 test("MC-01 parses fenced JSON and forces derived provenance", () => {
@@ -69,6 +69,20 @@ test("MC-01 ignores invalid AI policy values by falling back to safe defaults", 
   assert.equal(result.context_items[0].memory_policy, "review");
   assert.equal(result.context_items[0].transfer_policy, "manual_only");
   assert.equal(result.context_items[0].freshness.state, "current");
+});
+
+test("MC-01 refuses even a syntactically valid AI transfer escalation", () => {
+  const result = parseCuratorResponse(JSON.stringify({
+    context_items: [{
+      content: "Do not let Memory Curator grant transfer authority.",
+      kind: "constraint",
+      memory_policy: "keep",
+      transfer_policy: "allow",
+      source: { actor_type: "ai" }
+    }]
+  }));
+
+  assert.equal(result.context_items[0].transfer_policy, "manual_only");
 });
 
 test("MC-01 ContextItem input contains no AI-controlled approval fields", () => {
