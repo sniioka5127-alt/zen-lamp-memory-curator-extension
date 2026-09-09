@@ -158,6 +158,51 @@ export function assertRenderedContextEquivalent(renderings) {
   return true;
 }
 
+export function assertRenderedContextIntegrity(rendering, pkg, view) {
+  assertContextPackageTransferReady(pkg);
+  assertRedactedTransferViewReady(view, pkg);
+  if (!rendering || typeof rendering !== "object") {
+    throw new TypeError("Rendered Context is required");
+  }
+  if (rendering.renderer_version !== CONTEXT_RENDERER_VERSION) {
+    throw new Error("Rendered Context was not produced by CB-04");
+  }
+  if (rendering.status !== "rendered_not_sent") {
+    throw new Error("Rendered Context is not in rendered_not_sent state");
+  }
+  if (rendering.project_id !== pkg.project_id ||
+      rendering.package_id !== pkg.id ||
+      rendering.package_revision !== pkg.revision ||
+      rendering.transfer_view_id !== view.id) {
+    throw new Error("Rendered Context does not match the current approved transfer source");
+  }
+
+  const provider = normalizeProvider(rendering.provider);
+  const profile = resolveRenderProfile(provider);
+  if (rendering.profile !== profile) {
+    throw new Error("Rendered Context profile does not match its provider");
+  }
+
+  const canonicalPayload = buildCanonicalTransferPayload(pkg, view);
+  const fingerprint = fingerprintCanonicalPayload(canonicalPayload);
+  if (rendering.semantic_fingerprint?.algorithm !== fingerprint.algorithm ||
+      rendering.semantic_fingerprint?.value !== fingerprint.value ||
+      rendering.canonical_json !== fingerprint.canonical_json ||
+      stableStringify(rendering.canonical_payload) !== fingerprint.canonical_json) {
+    throw new Error("Rendered Context canonical payload or semantic fingerprint was modified");
+  }
+
+  const expectedText = renderByProfile(profile, {
+    provider,
+    fingerprint: fingerprint.value,
+    canonicalJson: prettyCanonicalJson(canonicalPayload)
+  });
+  if (rendering.rendered_text !== expectedText) {
+    throw new Error("Rendered Context presentation text was modified after rendering");
+  }
+  return true;
+}
+
 export class ContextRenderer {
   constructor({ auditLog = null, clock = () => new Date() } = {}) {
     this.auditLog = auditLog;
