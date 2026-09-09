@@ -78,8 +78,8 @@
         <h2>Chat Atlas</h2>
         <p>Map a conversation before deciding what deserves to continue.</p>
         <div id="atlasMetrics" class="metrics"></div>
-        <div class="room-note">AT runtime remains separately versioned. WS-01 links to it without copying its authority into the shared Core.</div>
-        <button id="openAtlas" type="button">Open Chat Atlas repository</button>
+        <div class="room-note">AT-03 carries the selected Human Project into Chat Atlas through a browser URL fragment. Room 1 still does not verify ProjectStore or gain memory, transfer, or decision authority.</div>
+        <button id="openAtlas" type="button">Open Chat Atlas</button>
       </article>
 
       <article class="room-card" data-room="memory">
@@ -125,13 +125,13 @@
 
     <section class="panel compact-panel">
       <div class="panel-head"><div><h2>Workspace boundary</h2></div></div>
-      <p class="muted">WS-01 stores only the selected Project ID as lightweight workspace state. Canonical ContextItems, ContextPackages, evidence, reviews, and Human Decision Records stay in their governed Core stores.</p>
+      <p class="muted">WS-01 stores only the selected Project ID as lightweight workspace state. Rooms 2–4 receive it through local extension routing. AT-03 sends only the opaque Project reference to Chat Atlas in a browser fragment, not in the HTTP query string. Canonical ContextItems, ContextPackages, evidence, reviews, and Human Decision Records stay in their governed Core stores.</p>
       <p id="flash" class="flash" aria-live="polite"></p>
     </section>
 
     <footer>
       <p><strong>One House:</strong> Project is the Human-owned center; providers and chats are resources inside the Project, not the Project itself.</p>
-      <p class="muted">WS-01 · Local First · Human Gate required · No automatic provider transport.</p>
+      <p class="muted">WS-01 + AT-03 · Local First · Human Gate required · No automatic provider transport.</p>
     </footer>
   </main>
   <script type="module" src="workspace.js"></script>

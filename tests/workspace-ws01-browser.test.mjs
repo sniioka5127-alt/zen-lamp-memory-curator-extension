@@ -56,6 +56,18 @@ test("WS-01: Rooms 2 through 4 receive the selected Project ID and Human Gate de
   assert.match(roundtableJs, /workspaceProjectId/);
 });
 
+test("AT-03: Room 1 receives only the selected Project reference through a browser fragment", () => {
+  const js = read("workspace.js");
+  const html = read("workspace.html");
+  assert.match(js, /ATLAS_PROJECT_PAGE_URL = "https:\/\/zen-lamp\.com\/tools\/chat-atlas\/"/);
+  assert.match(js, /url\.hash = `project=\$\{encodeURIComponent\(state\.project\.id\)\}`/);
+  assert.match(js, /AT-03 Project binding/);
+  assert.doesNotMatch(js, /ATLAS_PROJECT_PAGE_URL[\s\S]{0,500}searchParams\.set\("project"/);
+  assert.match(html, /AT-03 carries the selected Human Project into Chat Atlas through a browser URL fragment/);
+  assert.match(html, /Open Chat Atlas/);
+  assert.doesNotMatch(html, /Open Chat Atlas repository/);
+});
+
 test("WS-01: workspace does not add provider transport or decision execution", () => {
   const js = read("workspace.js");
   assert.doesNotMatch(js, /\bfetch\s*\(/);

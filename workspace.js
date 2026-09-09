@@ -11,7 +11,7 @@ const auditLog = new AuditLog(adapter);
 const projectStore = new ProjectStore(adapter, { auditLog });
 
 const WORKSPACE_STATE_KEY = "ws01CurrentProjectId";
-const ATLAS_REPOSITORY_URL = "https://github.com/sniioka5127-alt/zen-lamp-chat-atlas";
+const ATLAS_PROJECT_PAGE_URL = "https://zen-lamp.com/tools/chat-atlas/";
 
 const state = {
   project: null,
@@ -163,7 +163,7 @@ function renderWorkspace() {
     renderMetrics("bridgeMetrics", [["Packages", 0], ["Approved", 0], ["TransferViews", 0]]);
     renderMetrics("roundtableMetrics", [["Responses", 0], ["RT-05 reviews", 0], ["Finalized", 0]]);
     renderMetrics("decisionMetrics", [["Finalized", 0], ["Draft", 0], ["Revoked", 0]]);
-    renderMetrics("atlasMetrics", [["Project binding", "—"]]);
+    renderMetrics("atlasMetrics", [["AT-03 binding", "—"]]);
     return;
   }
 
@@ -175,7 +175,7 @@ function renderWorkspace() {
     makePill("Human Gate", project.settings?.human_gate_required === true ? "REQUIRED" : "INVALID", project.settings?.human_gate_required === true ? "good" : "warn")
   );
 
-  renderMetrics("atlasMetrics", [["Project binding", "ready"]]);
+  renderMetrics("atlasMetrics", [["AT-03 binding", "ready"]]);
   renderMetrics("memoryMetrics", [
     ["ContextItems", summary.memory.total],
     ["Human approved", summary.memory.approved],
@@ -234,8 +234,11 @@ async function openLocalRoom(path, { hash = "" } = {}) {
 }
 
 async function openAtlas() {
-  await chrome.tabs.create({ url: ATLAS_REPOSITORY_URL });
-  flash("Opened the separately versioned Chat Atlas repository. WS-01 does not duplicate Room 1 runtime code.");
+  if (!state.project) throw new Error("Select a Human Project first.");
+  const url = new URL(ATLAS_PROJECT_PAGE_URL);
+  url.hash = `project=${encodeURIComponent(state.project.id)}`;
+  await chrome.tabs.create({ url: url.toString() });
+  flash("Opened Chat Atlas with AT-03 Project binding in the browser fragment. The Project reference is not placed in the HTTP query string.", "good");
 }
 
 async function run(fn) {
