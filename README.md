@@ -239,6 +239,7 @@ The shared foundation includes:
 - [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
 - [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
 - [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.md)
+- [`HG-02 Decision Gate Browser Integration`](docs/HG02_DECISION_GATE_BROWSER_INTEGRATION_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -249,7 +250,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, **Open Context Bridge** for Room 3, or **Open Roundtable AI** for Room 4.
 
-HG-01 is currently a Core contract; a dedicated Human Decision browser surface can be added as a later phase without turning Human Gate into a fifth room.
+HG-02 integrates the Human Decision Gate directly into the existing Roundtable workspace after RT-05; Human Gate remains a system boundary rather than a fifth AI room.
 
 ## Tests
 
@@ -257,7 +258,7 @@ HG-01 is currently a Core contract; a dedicated Human Decision browser surface c
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 through RT-06 Roundtable contracts, and HG-01 Human Decision Gate.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 through RT-06 Roundtable contracts, and HG-01 / HG-02 Human Decision Gate contracts.
 
 ## License
 
