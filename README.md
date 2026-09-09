@@ -193,6 +193,20 @@ Therefore a Human Decision Record is authoritative as a record of the Human judg
 
 Only Human actors may create, update, finalize, revoke, or supersede HG-01 records. Finalization is revision-bound; finalized/revoked decisions are immutable and later judgment requires a new `supersedes_decision_id` record.
 
+## Human Gate — Decide
+
+### HG-01 — Human Decision Record / Decision Gate
+
+HG-01 records the final Human judgment after a finalized RT-05 interpretive review. The Human records the decision question, disposition, decision text, rationale, optional Human-accepted RT-05 support references, alternatives, unresolved questions, conditions, and revisit criteria.
+
+### HG-02 — Decision Gate Browser Integration
+
+HG-02 places the Human Decision Gate directly after RT-05 in the existing Roundtable workspace rather than creating a fifth AI room. The UI exposes Human-only draft, save, finalize, revoke, and supersede actions through the HG-01 Core contract.
+
+Only a finalized RT-05 review opens the gate. Only RT-05 subjects explicitly accepted by the Human may be cited as supporting interpretation references. Finalized decisions remain `truth_status = not_independently_verified` and `execution_status = not_executed_by_hg01`.
+
+No provider API, automatic execution, majority-to-decision conversion, model winner, or AI-authored final judgment is added.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -225,6 +239,7 @@ The shared foundation includes:
 - [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
 - [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
 - [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.md)
+- [`HG-02 Decision Gate Browser Integration`](docs/HG02_DECISION_GATE_BROWSER_INTEGRATION_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -235,7 +250,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, **Open Context Bridge** for Room 3, or **Open Roundtable AI** for Room 4.
 
-HG-01 is currently a Core contract; a dedicated Human Decision browser surface can be added as a later phase without turning Human Gate into a fifth room.
+HG-02 integrates the Human Decision Gate directly into the existing Roundtable workspace after RT-05; Human Gate remains a system boundary rather than a fifth AI room.
 
 ## Tests
 
@@ -243,7 +258,7 @@ HG-01 is currently a Core contract; a dedicated Human Decision browser surface c
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 through RT-06 Roundtable contracts, and HG-01 Human Decision Gate.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, RT-01 through RT-06 Roundtable contracts, and HG-01 / HG-02 Human Decision Gate contracts.
 
 ## License
 

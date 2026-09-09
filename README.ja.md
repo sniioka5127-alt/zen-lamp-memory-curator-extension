@@ -2,7 +2,7 @@
 
 長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較／解釈レビュー層まで統合しています。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-05 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-06 + HG-02 / v0.5.0** です。
 
 ## 基本思想
 
@@ -193,6 +193,20 @@ RT-05のHuman GateはReview Revisionに固定されます。確定済み／取�
 
 またRT-05はRT-01→RT-04の証跡チェーンを再検証し、RT-04のInterpretation FingerprintへReviewを固定します。RT-04 Extractionそのものを書き換えず、Human Review Artifactを別オブジェクトとして保持します。
 
+## Human Gate — 決める
+
+### HG-01 — Human Decision Record / Decision Gate
+
+HG-01は、確定済みRT-05 Human Reviewの後に、人間自身の最終判断を記録する境界です。
+
+### HG-02 — Decision Gate Browser Integration
+
+HG-02では第5のAI Roomを作らず、既存Roundtable画面のRT-05直後にHuman Decision Gateを配置します。HG-01 Coreを通じて、HumanだけがDraft作成・保存・確定・取消・差し替えを行えます。
+
+Decision Gateを開けるのはRT-05確定後だけです。判断材料として参照できるRoundtable解釈はRT-05でHumanがacceptした項目だけです。確定後も `truth_status = not_independently_verified`、`execution_status = not_executed_by_hg01` を維持します。
+
+Provider API、自動実行、多数派からの自動決定、モデル勝者、AIによる最終判断は追加しません。
+
 ## Local First / Privacy
 
 この拡張機能自身はAI APIを呼び出しません。
@@ -201,7 +215,7 @@ RT-05のHuman GateはReview Revisionに固定されます。確定済み／取�
 
 CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
 
-RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存します。RT-03はそのGoverned ResponseからRuntime Comparisonを生成し、RT-04はRuntime Interpretive Proposalを生成します。RT-05はHuman Reviewの決定Artifactを保存しますが、Claim本文、Assumption本文、Conflict説明、Evidence Quote、Raw ResponseをReview RecordやAudit Logへ重複保存しません。
+RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存します。RT-03はそのGoverned ResponseからRuntime Comparisonを生成し、RT-04はRuntime Interpretive Proposalを生成します。RT-05はHuman Reviewの決定Artifactを保存しますが、Claim本文、Assumption本文、Conflict説明、Evidence Quote、Raw ResponseをReview RecordやAudit Logへ重複保存しません。HG-01はHuman判断本文そのものをGoverned Artifactとして保存しますが、Audit Logには判断本文や理由を重複保存しません。
 
 ## Human Agency Core v0.1
 
@@ -223,6 +237,9 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 - [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
 - [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
 - [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
+- [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
+- [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.ja.md)
+- [`HG-02 Decision Gate Browser Integration`](docs/HG02_DECISION_GATE_BROWSER_INTEGRATION_v0.1.ja.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -231,9 +248,9 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 3. デベロッパーモードをオンにする。
 4. **Load unpacked** を押す。
 5. `manifest.json` が入っているフォルダを選択する。
-6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
+6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge**、Room 4とHuman Decision Gateは **Open Roundtable AI** から開く。
 
-RT-01〜RT-05は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
+RT-06でRoom 4専用Browser Runtimeを実装済みで、HG-02によりRT-05直後へHuman Decision Gateも統合済みです。
 
 ## テスト
 
@@ -241,7 +258,7 @@ RT-01〜RT-05は現時点ではCore Contractです。Room 4専用Browser Runtime
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01〜RT-05のRoundtable Contractを検証します。
+GitHub ActionsではHuman Agency Core、MC-01、Context Bridge Core／CB-06 Browser Runtime、RT-01〜RT-06 Roundtable Contract、HG-01／HG-02 Human Decision Gate Contractを検証します。
 
 ## ライセンス
 
