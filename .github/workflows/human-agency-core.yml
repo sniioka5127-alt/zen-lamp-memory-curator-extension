@@ -3,8 +3,11 @@ name: Human Agency Core
 on:
   push:
     branches:
-      - architecture/human-agency-v0.1
-      - mc-01-context-items
+      - main
+      - architecture/**
+      - mc-*
+      - cb-*
+      - rt-*
   pull_request:
     branches:
       - main
