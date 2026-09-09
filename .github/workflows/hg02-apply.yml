@@ -19,7 +19,9 @@ jobs:
         with:
           node-version: "22"
       - name: Apply HG-02 migration
-        run: node scripts/apply-hg02-browser-integration.mjs
+        run: |
+          node scripts/apply-hg02-browser-integration.mjs
+          node scripts/fix-hg02-browser-runtime.mjs
       - name: Commit generated integration changes
         run: |
           git config user.name "github-actions[bot]"
