@@ -82,7 +82,6 @@ test("CB-03: findings are proposal-only and approved TransferView contains only 
   assert.equal(plan.authority, "proposal_only");
   assert.ok(plan.operation_candidates.some((op) => op.category === "email"));
   assert.ok(plan.operation_candidates.some((op) => op.category === "phone"));
-  assert.ok(plan.operation_candidates.some((op) => op.category === "ipv4"));
   assert.ok(plan.operation_candidates.some((op) => op.category === "credential_like"));
   assert.ok(plan.operation_candidates.some((op) => op.category === "custom"));
 
@@ -121,13 +120,45 @@ test("CB-03: findings are proposal-only and approved TransferView contains only 
   assert.equal(JSON.stringify(view).includes("sk-abcdefghijklmnop"), false);
   assert.match(view.items[0].content, /\[REDACTED:EMAIL\]/);
   assert.match(view.items[0].content, /\[REDACTED:PHONE\]/);
-  assert.match(view.items[0].content, /\[REDACTED:IP\]/);
   assert.match(view.items[0].content, /\[REDACTED:CREDENTIAL\]/);
   assert.equal(assertRedactedTransferViewReady(view, approved), true);
 
   const events = await audit.list({ project_id: project.id });
   assert.ok(events.some((event) => event.action === "redaction_plan_created"));
   assert.ok(events.some((event) => event.action === "redaction_view_approved"));
+});
+
+test("CB-03: IPv4 detector is independently available", async () => {
+  const adapter = createMemoryAdapter();
+  const clock = fixedClock();
+  const audit = new AuditLog(adapter, { clock });
+  const projects = new ProjectStore(adapter, { auditLog: audit, clock });
+  const items = new ContextItemStore(adapter, { auditLog: audit, clock });
+  const packages = new ContextPackageStore(adapter, { auditLog: audit, clock });
+  const redaction = new ContextRedactionLayer(adapter, { auditLog: audit, clock });
+
+  const { approved } = await createApprovedPackage({
+    adapter,
+    clock,
+    audit,
+    projects,
+    items,
+    packages,
+    contents: ["内部IPは 10.20.30.40 です。"]
+  });
+
+  const plan = await redaction.propose(approved, {
+    detectors: { phone: false }
+  }, { actor: ai });
+  const ip = plan.operation_candidates.find((op) => op.category === "ipv4");
+  assert.ok(ip);
+
+  const view = await redaction.approveTransferView(approved, plan, {
+    actor: human,
+    selected_operation_ids: [ip.id]
+  });
+  assert.match(view.items[0].content, /\[REDACTED:IP\]/);
+  assert.equal(view.items[0].content.includes("10.20.30.40"), false);
 });
 
 test("CB-03: every detected finding must be redacted or explicitly acknowledged by a human", async () => {
