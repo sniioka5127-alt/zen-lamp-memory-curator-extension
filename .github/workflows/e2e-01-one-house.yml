@@ -16,7 +16,7 @@ permissions:
 jobs:
   real-browser-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,12 +26,13 @@ jobs:
           node-version: "22"
       - name: Run E2E-01 contract test
         run: node --test tests/e2e-01-contract.test.mjs
-      - name: Show browser version
+      - name: Install Chrome for Testing
         run: |
-          if command -v google-chrome-stable >/dev/null 2>&1; then google-chrome-stable --version; \
-          elif command -v google-chrome >/dev/null 2>&1; then google-chrome --version; \
-          elif command -v chromium >/dev/null 2>&1; then chromium --version; \
-          else echo "Chrome/Chromium not found" && exit 1; fi
+          npx --yes @puppeteer/browsers install chrome@stable --path "$RUNNER_TEMP/cft"
+          CHROME_BIN="$(find "$RUNNER_TEMP/cft" -type f -path '*/chrome-linux64/chrome' | head -n 1)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+          "$CHROME_BIN" --version
       - name: Run real Chromium extension smoke
         run: xvfb-run -a node scripts/e2e-01-browser-smoke.mjs
       - name: Upload browser smoke report
