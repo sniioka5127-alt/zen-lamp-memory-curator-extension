@@ -8,3 +8,4 @@ export * from "./context-item-store.mjs";
 export * from "./context-package-state-machine.mjs";
 export * from "./context-package-store.mjs";
 export * from "./context-selection-engine.mjs";
+export * from "./context-redaction-layer.mjs";
