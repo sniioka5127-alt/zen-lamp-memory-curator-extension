@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡層まで統合しています。
+長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較層まで統合しています。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-02 / v0.3.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-03 / v0.3.0** です。
 
 ## 基本思想
 
@@ -86,24 +86,48 @@ Provider名は人間が手動で帰属させるため、CaptureはHuman actorの
 
 `raw_response` は先頭・末尾の空白や改行を含め、**入力された文字列をそのまま保存**します。Trim、書き換え、要約、翻訳、分類は行いません。
 
-各Responseは、
-
-- RT-01 Input ID
-- Provider
-- CB-04 Rendering ID
-- ContextPackage Revision
-- TransferView ID
-- Canonical Semantic Fingerprint
-
-へ結び付けられます。
-
-Response本文には軽量Fingerprintも持たせ、後から内容が変わった場合に検知できるようにします。ただしこのFingerprintは暗号学的な真正性証明ではありません。
-
-CB-05 Receiptを付ける場合も、`provider_delivery_status = unverified` を維持し、Providerが実際に受領したことや、ResponseがProviderによって暗号学的に認証されたことまでは証明しません。
+各Responseは、RT-01 Input ID、Provider、CB-04 Rendering ID、ContextPackage Revision、TransferView ID、Canonical Semantic Fingerprintへ結び付けられます。
 
 誤って取り込んだResponseを修正する場合、古い記録を上書きせず、新しいResponseを `supersedes_response_id` で結び付けます。過去のRaw Evidenceは残ります。
 
 RT-02では、**回答の比較、要約、Agreement判定、モデル採点、多数決、勝者選定、Human Decisionを行いません。**
+
+### RT-03 — Response Comparison / Disagreement Matrix
+
+RT-03では、RT-01の参加Providerそれぞれについて**完全なRT-02 Responseを1件ずつ**選び、ローカル・決定論的に横比較します。
+
+出力状態は、
+
+- `status = compared_not_decided`
+- `authority = descriptive_no_truth_claim`
+
+です。
+
+比較するのは、
+
+- 全Providerに存在するExact Normalized Wording
+- Providerごとに固有のWording Segment
+- Provider間のPairwise Lexical Overlap
+- Exact Shared Segment数
+- Response LengthとLength Ratio
+
+です。
+
+日本語など空白で単語分割しづらい文章では、通常のWord Tokenに加えて**CJK Bigram**を使います。
+
+ただし、Exact Shared Wordingは「同じ正規化文字列が存在する」という意味に限ります。Lexical Overlapも診断値であって、**意味的一致、事実の正しさ、モデル品質を表す値ではありません。**
+
+そのためRT-03は必ず、
+
+```text
+interpretive_review.required = true
+```
+
+とします。
+
+また、`winner`、`decision`、`truth`、`majority_choice`、`model_ranking`、`recommended_provider` といった決定フィールドを作りません。
+
+**多数派であることを真実やHuman Authorityへ昇格させない**ことを、RT-03の不変条件にします。
 
 ## Local First / Privacy
 
@@ -113,7 +137,7 @@ RT-02では、**回答の比較、要約、Agreement判定、モデル採点、�
 
 CB-03のローカル検出は補助機能です。メールアドレス、電話番号らしい文字列、IPv4、代表的なCredential-like文字列、完全一致Custom Literalを扱い、Core側にはHuman-selected Manual Rangeもあります。**PIIや氏名を完全自動判定できるとは扱いません。**
 
-RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存しますが、Audit Logには本文を重複保存せずメタデータだけを記録します。
+RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Storeへ複製しません。RT-02は「そのResponse本文自体が証拠」であるためRaw Responseを意図的に保存します。RT-03はそのGoverned ResponseからRuntime Comparisonを生成しますが、v0.1では新しい永続Comparison Storeは追加しません。Audit LogにもProvider Response本文を重複保存しません。
 
 ## Human Agency Core v0.1
 
@@ -132,6 +156,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 - [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 - [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
+- [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -142,7 +167,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 5. `manifest.json` が入っているフォルダを選択する。
 6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge** から開く。
 
-RT-01とRT-02は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
+RT-01〜RT-03は現時点ではCore Contractです。Room 4専用Browser Runtimeは後続工程で実装します。
 
 ## テスト
 
@@ -150,7 +175,7 @@ RT-01とRT-02は現時点ではCore Contractです。Room 4専用Browser Runtime
 node --test tests/*.test.mjs
 ```
 
-GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01 Canonical Context Input、RT-02 Provider Response Capture / Provenanceを検証します。
+GitHub ActionsでもHuman Agency Core、MC-01 Contract、Context Bridge Core／CB-06 Browser Runtime、RT-01〜RT-03のRoundtable Contractを検証します。
 
 ## ライセンス
 
