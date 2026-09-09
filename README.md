@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and the first Room 4 Roundtable Core input layer.
 
-Current extension development version: **MC-01 + CB-06 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-01 / v0.3.0**.
 
 ## Principle
 
@@ -30,7 +30,7 @@ AI-controlled `status`, approval timestamps, or approval metadata are not accept
 
 ## Room 3 — Context Bridge
 
-The popup now includes **Open Context Bridge**, which opens a dedicated browser runtime for CB-01 through CB-06.
+The popup includes **Open Context Bridge**, which opens a dedicated browser runtime for CB-01 through CB-06.
 
 The runtime flow is:
 
@@ -47,6 +47,22 @@ Room 3 currently includes:
 
 CB-06 stores only session references and UI controls as its optional runtime session record; it does not duplicate canonical JSON or rendered provider prompts into that session cache.
 
+## Room 4 — Roundtable AI
+
+**RT-01** adds the Canonical Context Input boundary for Roundtable AI.
+
+Before any provider responses are compared, RT-01 verifies that every Roundtable participant is bound to the same Human-approved ContextPackage revision, TransferView, canonical JSON, semantic fingerprint, and exact CB-04 provider rendering. Provider coverage must exactly match the approved Roundtable target.
+
+RT-01 produces a runtime `RoundtableCanonicalInput` with:
+
+- `status = prepared_not_executed`
+- one canonical semantic payload
+- provider-specific presentation inputs derived from that same payload
+- optional CB-05 Human-confirmed handoff evidence
+- no winner, model ranking, response interpretation, majority vote, or Human decision
+
+If CB-05 receipts are supplied, RT-01 records the handoff evidence while preserving `delivery_status = unverified`; a manual handoff is not treated as proof that a provider received or processed the context.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -54,6 +70,8 @@ The extension itself does not call an AI API.
 Conversation text, drafts, ContextItems, and Core governance records are stored in `chrome.storage.local`. Nothing is sent to an external AI unless the user explicitly copies / hands it off.
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
+
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. Its audit event is metadata-only.
 
 ## Human Agency Core v0.1
 
@@ -70,6 +88,7 @@ The shared foundation includes:
 - [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
 - [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
+- [`RT-01 Roundtable Canonical Context Input`](docs/RT01_ROUNDTABLE_CANONICAL_CONTEXT_INPUT_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -80,13 +99,15 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
+RT-01 is currently a Core contract; a dedicated Room 4 browser runtime comes in a later phase.
+
 ## Tests
 
 ```bash
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core, and CB-06 browser runtime contract.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 Canonical Context Input contract.
 
 ## License
 
