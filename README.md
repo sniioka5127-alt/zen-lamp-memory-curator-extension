@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison / interpretive-review layers.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with governed Room 3 Context Bridge and Room 4 Roundtable browser runtimes.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-05 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-06 / v0.4.0**.
 
 ## Principle
 
@@ -154,6 +154,20 @@ Human Gate finalization is revision-bound. A finalized or revoked review is immu
 
 RT-05 revalidates the complete RT-01 → RT-04 source chain and binds the review to the exact RT-04 interpretation fingerprint. Human review therefore does not mutate the RT-04 extraction or silently promote it into factual truth.
 
+### RT-06 — Roundtable Browser Runtime Integration
+
+The popup includes **Open Roundtable AI**, which opens a dedicated Room 4 workspace that orchestrates RT-01 through RT-05 without bypassing their Core contracts.
+
+The runtime starts only from a Human-approved Roundtable ContextPackage and Human-approved TransferView, then performs:
+
+`approved Room 3 source → fresh canonical rendering → RT-01 → exact manual RT-02 response capture → RT-03 comparison → governed RT-04 prompt/import → RT-05 Human review`
+
+RT-06 intentionally creates a fresh CB-04 rendering from the approved Room 3 source. Prior CB-05 receipts are therefore **not silently reused** for the new rendering ID; the fresh RT-01 input uses no handoff receipt evidence in v0.1.
+
+Provider prompts and the RT-04 extraction prompt are manual-copy only. The runtime performs no `fetch()` / XHR provider transport, no automatic browser submission, and no provider API call.
+
+RT-06 also does not create a new full-session persistence layer. RT-02 raw evidence and RT-05 Human review records continue to use their existing governed Core stores; RT-01 / RT-03 / RT-04 remain runtime artifacts under their current contracts.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -184,6 +198,7 @@ The shared foundation includes:
 - [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
 - [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
 - [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
+- [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -192,9 +207,7 @@ The shared foundation includes:
 3. Turn on Developer mode.
 4. Click **Load unpacked**.
 5. Select the folder containing `manifest.json`.
-6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
-
-RT-01 through RT-05 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
+6. Open the extension popup for Memory Curator, **Open Context Bridge** for Room 3, or **Open Roundtable AI** for Room 4.
 
 ## Tests
 
@@ -202,7 +215,7 @@ RT-01 through RT-05 are currently Core contracts; a dedicated Room 4 browser run
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-05 Roundtable contracts.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-06 Roundtable contracts.
 
 ## License
 
