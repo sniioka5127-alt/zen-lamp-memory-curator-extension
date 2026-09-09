@@ -1,16 +1,14 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime.
 
-Current Memory Curator development version: **MC-01 / v0.2.0**.
+Current extension development version: **MC-01 + CB-06 / v0.3.0**.
 
 ## Principle
 
 The goal is not to preserve everything.
 
 **AI proposes memory candidates. The human decides what remains.**
-
-Memory Curator is Room 2 of the HIRAKU Tools / Human Agency Workspace.
 
 > One house, four rooms.
 
@@ -20,59 +18,42 @@ Memory Curator is Room 2 of the HIRAKU Tools / Human Agency Workspace.
 - **Roundtable AI** — compare
 - **Human Gate** — decide
 
-## MC-01 workflow
+## Room 2 — Memory Curator
 
 1. Paste a long AI conversation, or capture selected text from a page.
-2. Choose **Simple / Power User** and **INITIAL / UPDATE**.
-3. Generate a Memory Curator prompt.
-4. Paste that prompt into ChatGPT, Claude, Gemini, or another AI.
-5. Paste the returned `context_items` JSON back into the extension.
-6. Each candidate is stored locally as a `PROPOSED` ContextItem.
-7. The human explicitly **Approves / Rejects** each item and chooses its Memory Policy.
-8. Approved ContextItems can be copied as structured JSON for future use.
-
-### UPDATE mode
-
-If the Existing Memory field is empty, the extension uses already human-approved local ContextItems from the selected Project as the existing memory input.
-
-Legacy memory can still be pasted into the field for gradual migration.
-
-## Human Gate
-
-MC-01 never auto-approves external AI output.
-
-- AI result → `proposed`
-- Human Approve → `approved`
-- Human Reject → `rejected`
-- Editing approved semantic content → `needs_review`
+2. Generate the MC-01 curator prompt.
+3. Paste the returned `context_items` JSON back into the extension.
+4. Each candidate is stored locally as a `PROPOSED` ContextItem.
+5. The human explicitly **Approves / Rejects** each item and chooses its Memory Policy.
 
 AI-controlled `status`, approval timestamps, or approval metadata are not accepted as ContextItem authority fields.
 
-## Memory is not Context
+## Room 3 — Context Bridge
 
-Memory Curator owns **what remains**.
+The popup now includes **Open Context Bridge**, which opens a dedicated browser runtime for CB-01 through CB-06.
 
-The legacy **Next Chat Handoff / AI-specific Handoff** responsibility has been removed from the MC-01 prompt contract. **Context Bridge** owns transfer and handoff governance.
+The runtime flow is:
 
-Room 3 now has five implemented Core phases:
+`purpose → proposal-only selection → Human-chosen ContextItems → ContextPackage Human Gate → exclusion/redaction Human Gate → canonical provider render → copy attempt → Human-confirmed manual handoff`
 
-- **CB-01** defines the canonical ContextPackage schema, separate lifecycle, revision-bound Human Gate, source-integrity checks, freshness acknowledgment, and transfer-policy enforcement.
-- **CB-02** adds a local deterministic Context Selection Engine that ranks eligible approved ContextItems for a stated purpose while remaining strictly `proposal_only`.
-- **CB-03** adds a local Exclusion / Redaction Layer. Detector findings are proposal-only; a human must decide whether to redact, explicitly keep, or exclude content before an approved TransferView exists.
-- **CB-04** adds a Context Renderer that converts one approved TransferView into Generic / GPT / Claude / Gemini presentation formats while preserving one identical canonical semantic payload and fingerprint.
-- **CB-05** adds the Transfer Audit / Outbound Handoff Boundary. It separates `rendered_not_sent`, `attempted_not_confirmed`, and Human-confirmed handoff records, while keeping provider delivery explicitly `unverified`.
+Room 3 currently includes:
 
-CB-03 includes local hints for email, phone-like strings, IPv4 addresses, common credential-like patterns, exact custom literals, and Human-selected manual ranges. It does **not** claim complete PII or person-name detection. Redaction plans do not duplicate the matched sensitive text, and whole-item exclusions do not copy excluded content into the TransferView.
+- **CB-01** — ContextPackage schema, lifecycle, revision-bound Human Gate, source integrity, freshness acknowledgment, transfer-policy enforcement.
+- **CB-02** — local deterministic Context Selection Engine with explainable `proposal_only` ranking.
+- **CB-03** — Exclusion / Redaction Layer with Human redact / keep / whole-item exclude decisions.
+- **CB-04** — canonical Generic / GPT / Claude / Gemini rendering with one semantic payload and fingerprint.
+- **CB-05** — Transfer Audit / Outbound Handoff Boundary separating `rendered_not_sent`, `attempted_not_confirmed`, and Human-confirmed manual handoff receipts while keeping provider delivery `unverified`.
+- **CB-06** — browser runtime orchestration that exposes the full governed flow without adding automated provider transport.
 
-CB-04 provider formatting may differ, but the canonical JSON and semantic fingerprint must remain identical. Roundtable rendering verifies this equivalence before returning provider-specific views.
-
-CB-05 revalidates the approved ContextPackage, TransferView, provider target, canonical payload, fingerprint, and exact rendered text before an outbound handoff can be confirmed. Only a Human actor may create a handoff receipt. CB-05 v0.1 supports manual handoff records only; it does not call provider APIs and does not claim verified delivery.
+CB-06 stores only session references and UI controls as its optional runtime session record; it does not duplicate canonical JSON or rendered provider prompts into that session cache.
 
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
 
-Conversation text, drafts, and ContextItems are stored in `chrome.storage.local`. Nothing is sent to an external AI unless the user explicitly copies it into an AI service.
+Conversation text, drafts, ContextItems, and Core governance records are stored in `chrome.storage.local`. Nothing is sent to an external AI unless the user explicitly copies / hands it off.
+
+CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
 ## Human Agency Core v0.1
 
@@ -88,8 +69,7 @@ The shared foundation includes:
 - [`CB-03 Exclusion / Redaction Layer`](docs/CB03_EXCLUSION_REDACTION_v0.1.md)
 - [`CB-04 Context Renderer`](docs/CB04_CONTEXT_RENDERER_v0.1.md)
 - [`CB-05 Transfer Audit / Outbound Handoff Boundary`](docs/CB05_TRANSFER_AUDIT_OUTBOUND_BOUNDARY_v0.1.md)
-
-The reference Core includes Project Store, ContextItem Store, Provenance, Memory / Transfer Policy, Freshness, Audit Log, ContextPackage governance, proposal-only context selection, Human-approved privacy-reduced TransferViews, canonical provider rendering, and content-minimized outbound handoff receipts.
+- [`CB-06 Browser Runtime Integration`](docs/CB06_BROWSER_RUNTIME_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -98,6 +78,7 @@ The reference Core includes Project Store, ContextItem Store, Provenance, Memory
 3. Turn on Developer mode.
 4. Click **Load unpacked**.
 5. Select the folder containing `manifest.json`.
+6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
 ## Tests
 
@@ -105,7 +86,7 @@ The reference Core includes Project Store, ContextItem Store, Provenance, Memory
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, and Context Bridge Core tests.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core, and CB-06 browser runtime contract.
 
 ## License
 

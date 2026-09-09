@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HIRAKU Context Bridge</title>
+  <link rel="stylesheet" href="context-bridge.css" />
+</head>
+<body>
+  <main class="workspace">
+    <header class="hero">
+      <div class="mark">◯</div>
+      <div>
+        <p class="eyebrow">HIRAKU Tools · Room 3</p>
+        <h1>Context Bridge</h1>
+        <p>Choose what travels. Human approval remains required at every outbound boundary.</p>
+      </div>
+    </header>
+
+    <section class="notice">
+      <strong>Local-first.</strong> CB-06 uses the existing Human Agency Core in <code>chrome.storage.local</code>. It does not call an AI API, automate browser sending, or claim provider delivery.
+    </section>
+
+    <nav class="progress" aria-label="Context Bridge workflow">
+      <span data-progress="select">1 Select</span>
+      <span data-progress="package">2 Package</span>
+      <span data-progress="redact">3 Redact</span>
+      <span data-progress="render">4 Render</span>
+      <span data-progress="handoff">5 Handoff</span>
+    </nav>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div><span class="step">1</span><h2>Purpose & selection</h2></div>
+        <button id="refreshProjects" type="button" class="small">Refresh projects</button>
+      </div>
+      <div class="grid two">
+        <label>Project<select id="projectSelect"></select></label>
+        <label>Target mode<select id="targetMode"><option value="single">Single provider</option><option value="roundtable">Roundtable</option><option value="generic">Generic</option></select></label>
+      </div>
+      <label>Purpose<textarea id="purpose" placeholder="What are you handing context over for?"></textarea></label>
+      <div class="grid two">
+        <label>Providers<input id="providers" type="text" value="gpt" placeholder="gpt, claude, gemini" /></label>
+        <label>Extra keywords<input id="extraKeywords" type="text" placeholder="optional, comma-separated" /></label>
+      </div>
+      <div class="actions"><button id="proposeSelection" type="button" class="primary">Propose context selection</button></div>
+      <p id="selectionSummary" class="summary">Select a project and describe the purpose.</p>
+      <div id="candidateList" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">2</span><h2>ContextPackage Human Gate</h2></div><span id="packageStatus" class="status">Not created</span></div>
+      <p class="muted">Recommendations never become authority automatically. Check the ContextItems you want, then create and approve an exact package revision.</p>
+      <div class="actions">
+        <button id="createPackage" type="button" class="primary">Create package draft</button>
+        <button id="submitPackage" type="button">Submit for review</button>
+        <button id="approvePackage" type="button">Human approve package</button>
+      </div>
+      <div id="packageDetail" class="detail"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">3</span><h2>Exclusion / Redaction</h2></div><span id="redactionStatus" class="status">Waiting for approved package</span></div>
+      <label>Exact literals to flag locally<textarea id="customLiterals" placeholder="One literal per line, e.g. a person name or internal identifier"></textarea></label>
+      <div class="actions"><button id="scanRedaction" type="button" class="primary">Scan approved package</button></div>
+      <p class="muted">Each finding must be redacted, explicitly kept, or removed by excluding the whole ContextItem.</p>
+      <div id="redactionList" class="card-list"></div>
+      <div id="exclusionList" class="card-list"></div>
+      <div class="actions"><button id="approveTransferView" type="button">Human approve TransferView</button></div>
+      <div id="transferViewDetail" class="detail"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">4</span><h2>Canonical render</h2></div><span id="renderStatus" class="status">Waiting for approved TransferView</span></div>
+      <div class="actions"><button id="renderContext" type="button" class="primary">Render approved context</button></div>
+      <div id="renderList" class="card-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span class="step">5</span><h2>Manual outbound handoff</h2></div><span id="handoffStatus" class="status">Nothing handed off</span></div>
+      <p class="muted"><strong>Copying is not delivery.</strong> Copy records only an attempt. After you actually paste or otherwise hand off the rendered context, confirm it manually. Delivery remains <code>unverified</code>.</p>
+      <label>Destination label (optional)<input id="destinationLabel" type="text" placeholder="e.g. ChatGPT project chat" /></label>
+      <div id="handoffList" class="card-list"></div>
+      <div id="receiptList" class="card-list"></div>
+    </section>
+
+    <section class="panel compact-panel">
+      <div class="panel-head"><div><h2>Session controls</h2></div></div>
+      <div class="actions">
+        <button id="saveSession" type="button">Save local session refs</button>
+        <button id="loadSession" type="button">Load local session refs</button>
+        <button id="resetSession" type="button" class="ghost">Reset runtime state</button>
+      </div>
+      <p id="flash" class="summary" aria-live="polite"></p>
+    </section>
+
+    <footer>
+      <p><strong>Room 3 — Context Bridge:</strong> select → approve → reduce → render → human-confirm handoff.</p>
+      <p class="muted">CB-01 → CB-06 · No automated outbound transport in v0.1.</p>
+    </footer>
+  </main>
+  <script type="module" src="context-bridge.js"></script>
+</body>
+</html>
