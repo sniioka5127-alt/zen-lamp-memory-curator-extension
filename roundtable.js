@@ -121,6 +121,7 @@ function resetAfterComparison() {
   state.decision = null;
   renderExtraction();
   renderReview();
+  renderDecision();
   renderProgress();
 }
 
@@ -128,6 +129,7 @@ function resetAfterExtraction() {
   state.review = null;
   state.decision = null;
   renderReview();
+  renderDecision();
   renderProgress();
 }
 
@@ -484,6 +486,7 @@ function renderExtraction() {
 
 async function startReview() {
   if (!state.extraction) throw new Error("Import an RT-04 interpretive proposal first.");
+  state.decision = null;
   state.review = await reviewStore.create(
     state.extraction,
     state.input,
@@ -492,6 +495,7 @@ async function startReview() {
     { actor: humanActor }
   );
   renderReview();
+  renderDecision();
   flash("RT-05 Human review started. Every subject requires an explicit accept, reject, or hold decision.");
 }
 
@@ -818,6 +822,7 @@ function renderAll() {
   renderComparison();
   renderExtraction();
   renderReview();
+  renderDecision();
   renderProgress();
 }
 
