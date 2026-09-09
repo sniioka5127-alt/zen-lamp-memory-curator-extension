@@ -8,6 +8,7 @@ on:
       - mc-*
       - cb-*
       - rt-*
+      - hg-*
   pull_request:
     branches:
       - main
