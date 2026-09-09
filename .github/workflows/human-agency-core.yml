@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - architecture/human-agency-v0.1
+      - mc-01-context-items
   pull_request:
     branches:
       - main
@@ -21,5 +22,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Run Human Agency Core tests
-        run: node --test tests/human-agency-core.test.mjs
+      - name: Run Human Agency tests
+        run: node --test tests/*.test.mjs
