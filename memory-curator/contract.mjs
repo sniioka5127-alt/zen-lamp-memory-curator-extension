@@ -2,7 +2,6 @@ import {
   CONTEXT_KIND,
   FRESHNESS_STATE,
   MEMORY_POLICY,
-  TRANSFER_POLICY,
   assertOneOf,
   assertRequiredString
 } from "../core/types.mjs";
@@ -98,7 +97,7 @@ Use this JSON shape:
 Rules for fields:
 - kind must use one of the listed values.
 - memory_policy is only a recommendation; the human decides later.
-- transfer_policy must default to \"manual_only\" in MC-01.
+- transfer_policy must be \"manual_only\" in MC-01. Memory Curator does not control transfer authority.
 - Do not output status, approval state, approved_at, or approved_by. The application controls those.
 - If the conversation contains conflicting claims, preserve the conflict instead of silently choosing one.
 - Keep original_text short and only when it materially helps provenance.
@@ -120,7 +119,9 @@ export function normalizeCandidate(candidate = {}) {
   const content = assertRequiredString(candidate.content, "context item content");
   const kind = assertOneOf(candidate.kind, CONTEXT_KIND, "context item kind");
   const memory_policy = safeEnum(candidate.memory_policy, MEMORY_POLICY, "review");
-  const transfer_policy = safeEnum(candidate.transfer_policy, TRANSFER_POLICY, "manual_only");
+  // MC-01 deliberately does not accept transfer authority from AI output.
+  // Context Bridge owns transfer selection; imported memory stays manual_only.
+  const transfer_policy = "manual_only";
   const freshnessInput = candidate.freshness || {};
   const freshness = normalizeFreshness({
     ...freshnessInput,
