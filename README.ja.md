@@ -56,7 +56,12 @@ Memory Curatorは「何を残すか」だけを担当します。
 
 次のAIへ何を渡すかは **Context Bridge** が統治します。
 
-Room 3の最初のCore工程である **CB-01** では、ContextPackage Schema、専用State Machine、Revisionに結び付いたHuman Gate、Source Integrity確認、Freshness確認、Transfer Policy強制を実装します。CB-01の時点では、Context BridgeのブラウザUI、自動選択、AI別レンダリング、外部送信そのものはまだ実装しません。
+Room 3では現在、2つのCore工程を実装しています。
+
+- **CB-01**：ContextPackage Schema、専用Lifecycle、Revisionに結び付いたHuman Gate、Source Integrity確認、Freshness確認、Transfer Policy強制。
+- **CB-02**：承認済みContextItemsを目的に応じてローカル・決定論的に順位付けするContext Selection Engine。出力は厳格に `proposal_only` です。
+
+CB-02はAI APIを呼ばず、自動承認・AI別レンダリング・外部送信もしません。最終的なTransfer Ready判定はCB-01 Human Gateが担当します。
 
 ## Local First / Privacy
 
@@ -74,8 +79,9 @@ Room 3の最初のCore工程である **CB-01** では、ContextPackage Schema�
 - [`4 Module Boundary Spec v0.1`](docs/MODULE_BOUNDARY_SPEC_v0.1.md)
 - [`MC-01 Migration Plan`](docs/MC01_PLAN_v0.1.md)
 - [`CB-01 ContextPackage / State Machine / Human Gate`](docs/CB01_CONTEXT_PACKAGE_v0.1.md)
+- [`CB-02 Context Selection Engine`](docs/CB02_CONTEXT_SELECTION_ENGINE_v0.1.md)
 
-Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、CB-01 ContextPackage Lifecycle基盤が含まれます。
+Reference Coreには、Project Store、ContextItem Store、Provenance、Memory / Transfer Policy、Freshness、Audit Log、ContextPackage統治、proposal-onlyのContext選択が含まれます。
 
 ## インストール方法 Chrome / Edge
 
