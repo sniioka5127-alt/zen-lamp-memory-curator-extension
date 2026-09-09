@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import * as Core from "../core/index.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const read = (name) => fs.readFileSync(path.join(root, name), "utf8");
@@ -24,6 +25,22 @@ test("RT-06: Roundtable browser workspace exposes the complete RT-01 through RT-
   ]) assert.match(html, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(html, /does not call a provider API/i);
   assert.match(html, /Human decision/i);
+});
+
+test("RT-06: all browser-orchestrated Core contracts are exported", () => {
+  for (const symbol of [
+    "AuditLog",
+    "ContextPackageStore",
+    "ContextRedactionLayer",
+    "ContextRenderer",
+    "RoundtableCanonicalInputBuilder",
+    "RoundtableResponseStore",
+    "RoundtableComparisonEngine",
+    "RoundtableInterpretiveExtractionEngine",
+    "RoundtableInterpretiveReviewStore",
+    "acceptedInterpretiveSubjectIds",
+    "createChromeStorageAdapter"
+  ]) assert.equal(typeof Core[symbol], "function", `${symbol} must be exported by core/index.mjs`);
 });
 
 test("RT-06: runtime delegates authority to Core contracts and keeps provider transport manual", () => {
