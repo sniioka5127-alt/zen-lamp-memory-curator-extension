@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison / interpretive-proposal layers.
+A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with a governed Room 3 Context Bridge runtime and Room 4 Roundtable Core evidence / comparison / interpretive-review layers.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-04 / v0.3.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-05 / v0.3.0**.
 
 ## Principle
 
@@ -125,6 +125,35 @@ Potential conflicts must involve at least two providers and may reference only e
 
 RT-04 forbids winner / truth / model-ranking / recommendation / final-decision fields. Repeated wording and model majority are never upgraded to factual correctness or Human authority.
 
+### RT-05 — Interpretive Review / Human Gate
+
+RT-05 is the Human review boundary for RT-04 interpretive proposals.
+
+Only a Human actor may create, edit, finalize, revoke, or supersede an RT-05 review. Every RT-04 Claim, Assumption, and Conflict must receive one explicit Human review decision before finalization:
+
+- `accept`
+- `reject`
+- `hold`
+
+The meaning is intentionally narrow:
+
+- accepted Claim / Assumption = **accepted for downstream deliberation, not accepted as truth**
+- accepted Conflict = **accepted as an interpretive conflict candidate only**
+- rejected = rejected as an interpretation
+- hold = held for further review
+
+A finalized RT-05 review uses:
+
+- `status = finalized_human_review`
+- `authority = human_reviewed_interpretation_not_truth_or_final_decision`
+- `review_scope = interpretive_structure_only`
+- `truth_status = not_evaluated`
+- `final_decision_status = not_created`
+
+Human Gate finalization is revision-bound. A finalized or revoked review is immutable; changes require a new review linked by `supersedes_review_id`. A finalized review can also be Human-revoked.
+
+RT-05 revalidates the complete RT-01 → RT-04 source chain and binds the review to the exact RT-04 interpretation fingerprint. Human review therefore does not mutate the RT-04 extraction or silently promote it into factual truth.
+
 ## Local First / Privacy
 
 The extension itself does not call an AI API.
@@ -133,7 +162,7 @@ Conversation text, drafts, ContextItems, and Core governance records are stored 
 
 CB-03 local detection is assistive, not comprehensive. It supports email, phone-like strings, IPv4, representative credential-like strings, exact custom literals, and the underlying Core also supports Human-selected manual ranges. It does **not** claim complete PII or person-name detection.
 
-RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses and does not add a new persistent comparison store in v0.1. RT-04 creates a runtime interpretive proposal and keeps its Audit Log metadata-only; claim text, assumption text, conflict explanations, evidence quotes, and raw responses are not duplicated into the Audit Log.
+RT-01 does not create a new persistent copy of canonical JSON or rendered provider prompts. RT-02 intentionally persists the raw provider response because that exact text is the evidence being governed. RT-03 computes a runtime comparison from those governed responses. RT-04 creates a runtime interpretive proposal. RT-05 persists the Human review decision artifact, but does not duplicate Claim text, Assumption text, Conflict explanations, evidence quotes, or raw provider responses into the review record or Audit Log.
 
 ## Human Agency Core v0.1
 
@@ -154,6 +183,7 @@ The shared foundation includes:
 - [`RT-02 Provider Response Capture / Provenance`](docs/RT02_PROVIDER_RESPONSE_CAPTURE_v0.1.md)
 - [`RT-03 Response Comparison / Disagreement Matrix`](docs/RT03_RESPONSE_COMPARISON_MATRIX_v0.1.md)
 - [`RT-04 Claim / Assumption / Conflict Extraction`](docs/RT04_CLAIM_ASSUMPTION_CONFLICT_EXTRACTION_v0.1.md)
+- [`RT-05 Interpretive Review / Human Gate`](docs/RT05_INTERPRETIVE_REVIEW_HUMAN_GATE_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -164,7 +194,7 @@ The shared foundation includes:
 5. Select the folder containing `manifest.json`.
 6. Open the extension popup for Memory Curator, or click **Open Context Bridge** for Room 3.
 
-RT-01 through RT-04 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
+RT-01 through RT-05 are currently Core contracts; a dedicated Room 4 browser runtime comes in a later phase.
 
 ## Tests
 
@@ -172,7 +202,7 @@ RT-01 through RT-04 are currently Core contracts; a dedicated Room 4 browser run
 node --test tests/*.test.mjs
 ```
 
-GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-04 Roundtable contracts.
+GitHub Actions validates the Human Agency Core, MC-01 contract, Context Bridge Core / browser runtime, and RT-01 through RT-05 Roundtable contracts.
 
 ## License
 
