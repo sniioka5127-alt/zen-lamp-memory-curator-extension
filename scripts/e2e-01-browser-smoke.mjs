@@ -3,6 +3,7 @@ import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +31,42 @@ function findChrome() {
     if (fs.existsSync(candidate)) return candidate;
   }
   throw new Error(`Chrome/Chromium not found. Checked: ${candidates.join(", ")}`);
+}
+
+function extensionIdFromPublicKey(publicKeyDer) {
+  const digest = createHash("sha256").update(publicKeyDer).digest().subarray(0, 16);
+  const alphabet = "abcdefghijklmnop";
+  let id = "";
+  for (const byte of digest) id += alphabet[byte >> 4] + alphabet[byte & 0x0f];
+  return id;
+}
+
+async function prepareTestExtension(testRoot) {
+  const extensionDir = path.join(testRoot, "extension");
+  await fsp.cp(repoRoot, extensionDir, {
+    recursive: true,
+    filter(source) {
+      const relative = path.relative(repoRoot, source);
+      if (!relative) return true;
+      const first = relative.split(path.sep)[0];
+      return first !== ".git" && first !== "artifacts";
+    }
+  });
+
+  const manifestPath = path.join(extensionDir, "manifest.json");
+  const manifest = JSON.parse(await fsp.readFile(manifestPath, "utf8"));
+  const { publicKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicExponent: 0x10001
+  });
+  const publicKeyDer = publicKey.export({ type: "spki", format: "der" });
+  manifest.key = publicKeyDer.toString("base64");
+  await fsp.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  return {
+    extensionDir,
+    extensionId: extensionIdFromPublicKey(publicKeyDer)
+  };
 }
 
 class CdpPipe {
@@ -94,40 +131,6 @@ class CdpPipe {
       });
     });
   }
-}
-
-async function readJsonRetry(file, timeoutMs = 15000) {
-  const deadline = Date.now() + timeoutMs;
-  let lastError = null;
-  while (Date.now() < deadline) {
-    try {
-      return JSON.parse(await fsp.readFile(file, "utf8"));
-    } catch (error) {
-      lastError = error;
-      await sleep(150);
-    }
-  }
-  throw new Error(`Could not read ${file}: ${lastError?.message || "timeout"}`);
-}
-
-async function discoverExtensionId(profileDir) {
-  const preferencesPath = path.join(profileDir, "Default", "Preferences");
-  const deadline = Date.now() + 20000;
-  while (Date.now() < deadline) {
-    try {
-      const prefs = await readJsonRetry(preferencesPath, 1000);
-      const settings = prefs?.extensions?.settings || {};
-      for (const [id, entry] of Object.entries(settings)) {
-        const manifestName = entry?.manifest?.name || "";
-        const entryPath = entry?.path ? path.resolve(entry.path) : null;
-        if (manifestName === "ZEN LAMP Memory Curator" || entryPath === repoRoot) return id;
-      }
-    } catch {
-      // Chrome may still be writing the profile.
-    }
-    await sleep(200);
-  }
-  throw new Error("Could not discover unpacked extension ID from Chrome Preferences.");
 }
 
 async function attachPage(cdp, url) {
@@ -202,7 +205,11 @@ function safeProjectForExpression(projectId) {
 async function main() {
   await fsp.mkdir(artifactDir, { recursive: true });
   const chrome = findChrome();
-  const profileDir = await fsp.mkdtemp(path.join(os.tmpdir(), "hiraku-e2e01-"));
+  const testRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "hiraku-e2e01-"));
+  const profileDir = path.join(testRoot, "profile");
+  await fsp.mkdir(profileDir, { recursive: true });
+  const { extensionDir, extensionId } = await prepareTestExtension(testRoot);
+
   const chromeArgs = [
     "--no-sandbox",
     "--disable-gpu",
@@ -212,15 +219,15 @@ async function main() {
     "--disable-background-networking",
     "--disable-component-update",
     `--user-data-dir=${profileDir}`,
-    `--disable-extensions-except=${repoRoot}`,
-    `--load-extension=${repoRoot}`,
+    `--disable-extensions-except=${extensionDir}`,
+    `--load-extension=${extensionDir}`,
     "--remote-debugging-pipe",
     "about:blank"
   ];
   if (process.env.E2E_HEADLESS === "1") chromeArgs.unshift("--headless=new");
 
   const child = spawn(chrome, chromeArgs, {
-    cwd: repoRoot,
+    cwd: extensionDir,
     stdio: ["ignore", "ignore", "inherit", "pipe", "pipe"]
   });
   const cdp = new CdpPipe(child);
@@ -228,6 +235,7 @@ async function main() {
     version: "E2E-01",
     scope: "One House real Chromium extension browser smoke",
     chrome,
+    extension_id: extensionId,
     started_at: new Date().toISOString(),
     checks: [],
     status: "running"
@@ -240,9 +248,7 @@ async function main() {
 
   try {
     await cdp.send("Browser.getVersion");
-    const extensionId = await discoverExtensionId(profileDir);
-    report.extension_id = extensionId;
-    record("unpacked extension loaded", { extension_id: extensionId });
+    record("temporary unpacked extension loaded with deterministic test key", { extension_id: extensionId });
 
     const workspaceUrl = `chrome-extension://${extensionId}/workspace.html`;
     const workspace = await attachPage(cdp, workspaceUrl);
@@ -352,7 +358,7 @@ async function main() {
     }
     await sleep(250);
     if (!child.killed) child.kill("SIGKILL");
-    await fsp.rm(profileDir, { recursive: true, force: true });
+    await fsp.rm(testRoot, { recursive: true, force: true });
   }
 }
 
