@@ -81,7 +81,7 @@ test("HG-02: browser adds no automated provider transport or decision execution 
   assert.doesNotMatch(js, /majority_choice|recommended_provider|best_provider|correct_provider/);
 });
 
-test("HG-02: extension version advances to v0.5.0 and Roundtable browser JavaScript parses", () => {
-  assert.equal(manifest.version, "0.5.0");
+test("HG-02: Decision Gate remains valid on the v0.5/v0.6 integrated browser line and Roundtable JavaScript parses", () => {
+  assert.match(manifest.version, /^0\.[56]\.0$/);
   execFileSync(process.execPath, ["--check", new URL("../roundtable.js", import.meta.url).pathname], { stdio: "pipe" });
 });

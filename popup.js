@@ -13,6 +13,7 @@ import {
 const $ = (id) => document.getElementById(id);
 const humanActor = { type: "human", id: "local_user" };
 const aiImportActor = { type: "ai", name: "memory_curator_external_ai" };
+const workspaceProjectId = new URLSearchParams(location.search).get("project");
 
 const adapter = createChromeStorageAdapter(chrome.storage.local);
 const auditLog = new AuditLog(adapter);
@@ -49,14 +50,22 @@ async function findProjectByName(name) {
   return projects.find((project) => project.name === name) || null;
 }
 
+async function currentProject(name = projectName()) {
+  if (workspaceProjectId) {
+    const bound = await projectStore.get(workspaceProjectId);
+    if (bound && bound.status !== "archived") return bound;
+  }
+  return findProjectByName(name);
+}
+
 async function ensureProject(name) {
-  const existing = await findProjectByName(name);
+  const existing = await currentProject(name);
   if (existing) return existing;
   return projectStore.create({ name }, { actor: humanActor });
 }
 
 async function approvedMemoryForPrompt(name) {
-  const project = await findProjectByName(name);
+  const project = await currentProject(name);
   if (!project) return "";
   const approved = await itemStore.listByProject(project.id, { statuses: ["approved"] });
   const retained = approved.filter((item) => item.memory_policy !== "drop");
@@ -105,11 +114,6 @@ async function copyText(text, successMessage) {
     temp.remove();
   }
   flash(successMessage);
-}
-
-async function copyOutput() {
-  if (!outputEl.value.trim()) await generatePrompt();
-  await copyText(outputEl.value, "Copied prompt.");
 }
 
 async function getActiveTab() {
@@ -174,7 +178,7 @@ function makeButton(text, className, handler) {
 async function renderProject(projectId = null) {
   let project = null;
   if (projectId) project = await projectStore.get(projectId);
-  if (!project) project = await findProjectByName(projectName());
+  if (!project) project = await currentProject(projectName());
 
   itemListEl.replaceChildren();
   if (!project) {
@@ -257,7 +261,7 @@ async function renderProject(projectId = null) {
 }
 
 async function copyApprovedMemory() {
-  const project = await findProjectByName(projectName());
+  const project = await currentProject(projectName());
   if (!project) {
     flash("No project memory yet.");
     return;
@@ -289,7 +293,7 @@ async function saveDraft() {
 async function loadDraft() {
   const data = await chrome.storage.local.get(["mc01Draft", "existingMemory", "conversation", "output", "depth", "mode"]);
   const draft = data.mc01Draft || {};
-  projectNameEl.value = draft.projectName || "Memory Curator Local";
+  if (!workspaceProjectId) projectNameEl.value = draft.projectName || "Memory Curator Local";
   existingMemoryEl.value = draft.existingMemory ?? data.existingMemory ?? "";
   conversationEl.value = draft.conversation ?? data.conversation ?? "";
   outputEl.value = draft.output ?? data.output ?? "";
@@ -297,8 +301,16 @@ async function loadDraft() {
   depthEl.value = draft.depth ?? data.depth ?? "simple";
   modeEl.value = draft.mode ?? data.mode ?? "initial";
   existingMemoryWrap.classList.toggle("hidden", modeEl.value !== "update");
-  await renderProject();
+  await renderProject(workspaceProjectId || null);
   flash("Local draft loaded.");
+}
+
+async function openWorkspace() {
+  const project = await currentProject(projectName());
+  const url = new URL(chrome.runtime.getURL("workspace.html"));
+  if (project) url.searchParams.set("project", project.id);
+  await chrome.tabs.create({ url: url.toString() });
+  window.close();
 }
 
 $("grabSelection").addEventListener("click", async () => {
@@ -316,13 +328,14 @@ $("grabSelection").addEventListener("click", async () => {
   }
 });
 
+$("openWorkspace").addEventListener("click", openWorkspace);
 $("generate").addEventListener("click", generatePrompt);
 $("copy").addEventListener("click", copyOutput);
 $("importCandidates").addEventListener("click", importCandidates);
 $("copyApproved").addEventListener("click", copyApprovedMemory);
 $("save").addEventListener("click", saveDraft);
 $("load").addEventListener("click", loadDraft);
-$("refreshItems").addEventListener("click", () => renderProject());
+$("refreshItems").addEventListener("click", () => renderProject(workspaceProjectId || null));
 $("clear").addEventListener("click", () => {
   existingMemoryEl.value = "";
   conversationEl.value = "";
@@ -330,6 +343,15 @@ $("clear").addEventListener("click", () => {
   aiResultEl.value = "";
   flash("Draft fields cleared.");
 });
-projectNameEl.addEventListener("change", () => renderProject());
+projectNameEl.addEventListener("change", () => renderProject(workspaceProjectId || null));
 
-renderProject();
+if (workspaceProjectId) {
+  const boundProject = await projectStore.get(workspaceProjectId);
+  if (boundProject && boundProject.status !== "archived") {
+    projectNameEl.value = boundProject.name;
+    projectNameEl.readOnly = true;
+    projectNameEl.title = `Bound to One House Project ${boundProject.id}`;
+  }
+}
+
+await renderProject(workspaceProjectId || null);

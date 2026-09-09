@@ -77,7 +77,7 @@ test("RT-06: popup exposes Room 4 on the integrated browser line", () => {
   assert.match(popup, /id="openRoundtable"/);
   assert.match(popup, /popup-roundtable\.js/);
   assert.match(launcher, /roundtable\.html/);
-  assert.match(manifest.version, /^0\.[45]\.0$/);
+  assert.match(manifest.version, /^0\.[456]\.0$/);
 });
 
 test("RT-06: browser module passes JavaScript syntax check", () => {

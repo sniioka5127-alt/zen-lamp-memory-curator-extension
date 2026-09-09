@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-A local-first browser extension for turning long AI conversations into structured memory candidates that a **human explicitly reviews and approves**, with governed Room 3 Context Bridge and Room 4 Roundtable browser runtimes plus a system-wide Human Decision Gate.
+A local-first Human Agency browser toolset with a Project-centered **One House Workspace**, Human-reviewed memory, governed Room 3 Context Bridge, Room 4 Roundtable browser runtime, and a system-wide Human Decision Gate.
 
-Current extension / Core development line: **MC-01 + CB-06 + RT-06 + HG-01 / v0.4.0**.
+Current extension / Core development line: **MC-01 + CB-06 + RT-06 + HG-02 + WS-01 / v0.6.0**.
 
 ## Principle
 
@@ -17,6 +17,14 @@ The goal is not to preserve everything.
 - **Context Bridge** — choose what travels
 - **Roundtable AI** — compare
 - **Human Gate** — decide
+
+## One House Workspace — WS-01
+
+WS-01 adds a Project-centered common workspace for all four rooms plus Human Gate. The Product is integrated while module authority remains separated.
+
+The workspace can create/select a Human Project, show governed Core counts, and open Room 2, Room 3, Room 4, or the Human Decision Gate with the selected Project ID. It persists only `ws01CurrentProjectId` as lightweight shell state; canonical memory, evidence, packages, reviews, and decisions remain in their existing Core stores.
+
+Chat Atlas remains separately versioned at WS-01 and is linked without copying its runtime into this repository. No provider API, automatic transport, majority-to-decision conversion, or decision execution is added.
 
 ## Room 2 — Memory Curator
 
@@ -240,6 +248,7 @@ The shared foundation includes:
 - [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
 - [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.md)
 - [`HG-02 Decision Gate Browser Integration`](docs/HG02_DECISION_GATE_BROWSER_INTEGRATION_v0.1.md)
+- [`WS-01 Integrated Project Workspace / One House Shell`](docs/WS01_INTEGRATED_PROJECT_WORKSPACE_v0.1.md)
 
 ## Install on Chrome / Edge
 
@@ -248,7 +257,7 @@ The shared foundation includes:
 3. Turn on Developer mode.
 4. Click **Load unpacked**.
 5. Select the folder containing `manifest.json`.
-6. Open the extension popup for Memory Curator, **Open Context Bridge** for Room 3, or **Open Roundtable AI** for Room 4.
+6. Open the extension popup and choose **Open One House Workspace** for the Project-centered shell, or open Memory Curator / Context Bridge / Roundtable AI directly.
 
 HG-02 integrates the Human Decision Gate directly into the existing Roundtable workspace after RT-05; Human Gate remains a system boundary rather than a fifth AI room.
 

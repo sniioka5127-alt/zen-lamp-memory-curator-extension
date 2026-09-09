@@ -1,8 +1,8 @@
 # ZEN LAMP Memory Curator Extension
 
-長いAI対話から「次に残す価値のある記憶」を整理し、**人間が承認する**ためのローカル動作ブラウザ拡張機能です。現在はRoom 3のContext Bridge Browser Runtimeと、Room 4のRoundtable Core証跡／比較／解釈レビュー層まで統合しています。
+Human Projectを中心に4つのRoomとHuman Gateを一つのWorkspaceから扱う、ローカルファーストのHuman Agencyブラウザツールです。Memory Curator、Context Bridge、Roundtable AI、Human Decision Gateを統合しつつ、各ModuleのAuthorityは分離します。
 
-現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-06 + HG-02 / v0.5.0** です。
+現在の拡張機能／Core開発ラインは **MC-01 + CB-06 + RT-06 + HG-02 + WS-01 / v0.6.0** です。
 
 ## 基本思想
 
@@ -17,6 +17,14 @@
 - **Context Bridge** — 渡す
 - **Roundtable AI** — 比べる
 - **Human Gate** — 決める
+
+## One House Workspace — WS-01
+
+WS-01では、4つのRoomとHuman GateをHuman Project中心の共通Workspaceから見渡し、行き来できるようにします。**Productは統合し、Architectureは分離したまま**です。
+
+WorkspaceではHuman Projectの作成・選択、Governed Core Recordの件数表示、選択Project IDを指定したRoom 2 / Room 3 / Room 4 / Human Decision Gateへの移動ができます。WS-01独自に保存するのは軽量UI Stateの`ws01CurrentProjectId`だけで、Memory・Evidence・ContextPackage・Review・Decision本文は既存Core Storeへ残します。
+
+Chat AtlasはWS-01時点では別RepoでVersion管理を継続し、RuntimeをこのRepoへ複製しません。Provider API、自動送信、多数派からの自動Decision、Decision自動実行は追加しません。
 
 ## Room 2 — Memory Curator
 
@@ -240,6 +248,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 - [`RT-06 Roundtable Browser Runtime Integration`](docs/RT06_ROUNDTABLE_BROWSER_RUNTIME_v0.1.md)
 - [`HG-01 Human Decision Record / Decision Gate`](docs/HG01_HUMAN_DECISION_RECORD_v0.1.ja.md)
 - [`HG-02 Decision Gate Browser Integration`](docs/HG02_DECISION_GATE_BROWSER_INTEGRATION_v0.1.ja.md)
+- [`WS-01 Integrated Project Workspace / One House Shell`](docs/WS01_INTEGRATED_PROJECT_WORKSPACE_v0.1.ja.md)
 
 ## インストール方法 Chrome / Edge
 
@@ -248,7 +257,7 @@ RT-01自身はCanonical JSONやRendered Provider Promptを新しい永続Store�
 3. デベロッパーモードをオンにする。
 4. **Load unpacked** を押す。
 5. `manifest.json` が入っているフォルダを選択する。
-6. Memory Curatorは通常のPopupから、Room 3は **Open Context Bridge**、Room 4とHuman Decision Gateは **Open Roundtable AI** から開く。
+6. Popupの **Open One House Workspace** からProject中心の共通Workspaceを開く。Memory Curator / Context Bridge / Roundtable AIを直接開くこともできます。
 
 RT-06でRoom 4専用Browser Runtimeを実装済みで、HG-02によりRT-05直後へHuman Decision Gateも統合済みです。
 

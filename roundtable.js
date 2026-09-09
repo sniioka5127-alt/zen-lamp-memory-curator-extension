@@ -16,6 +16,7 @@ import {
 const $ = (id) => document.getElementById(id);
 const humanActor = { type: "human", id: "local_user" };
 const systemActor = { type: "system", name: "roundtable_browser_runtime" };
+const workspaceProjectId = new URLSearchParams(location.search).get("project");
 
 const adapter = createChromeStorageAdapter(chrome.storage.local);
 const auditLog = new AuditLog(adapter);
@@ -138,10 +139,11 @@ async function coreRows(prefix) {
 }
 
 async function refreshSources({ preferredPackage = null, preferredView = null } = {}) {
-  const packages = (await coreRows("context-package:"))
+  let packages = (await coreRows("context-package:"))
     .filter((pkg) => pkg.status === "approved" && pkg.human_gate?.state === "approved")
     .filter((pkg) => pkg.target?.mode === "roundtable" && (pkg.target?.platforms || []).length >= 2)
     .sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")));
+  if (workspaceProjectId) packages = packages.filter((pkg) => pkg.project_id === workspaceProjectId);
 
   const packageSelect = $("packageSelect");
   packageSelect.replaceChildren();
