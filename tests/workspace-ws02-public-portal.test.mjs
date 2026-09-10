@@ -52,3 +52,21 @@ test("WS-02 deployment builder replaces only tools root files and preserves Chat
   assert.match(builder, /Preserve \/tools\/chat-atlas\//);
   for (const file of ["index.html", "tools.css", "tools.js"]) assert.match(builder, new RegExp(file.replace(".", "\\.")));
 });
+
+test("WS-02 deployment verifier checks One House markers and preserves Chat Atlas availability", () => {
+  const verifier = read("scripts/ws02-public-tools-verify.mjs");
+  assert.match(verifier, /https:\/\/zen-lamp\.com\/tools\//);
+  for (const marker of ["ONE HOUSE", "chat-atlas", "memory-curator", "context-bridge", "roundtable-ai", "HUMAN GATE", "AI ANALYSIS ENDS HERE"]) {
+    assert.match(verifier, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(verifier, /Existing Chat Atlas remains available/);
+  assert.match(verifier, /ws02-public-deployment-report\.json/);
+});
+
+test("WS-02 workflow keeps deployment observation non-blocking until Hostinger publication", () => {
+  const workflow = read(".github/workflows/ws-02-public-tools.yml");
+  assert.match(workflow, /deployment-observation:/);
+  assert.match(workflow, /continue-on-error: true/);
+  assert.match(workflow, /node scripts\/ws02-public-tools-verify\.mjs/);
+  assert.match(workflow, /ws02-public-deployment-report/);
+});
