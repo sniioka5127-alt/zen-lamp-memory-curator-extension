@@ -1,0 +1,63 @@
+name: WS-02 Public One House Tools
+
+on:
+  push:
+    branches:
+      - main
+      - ws-02-public-one-house-landing
+    paths:
+      - "public-tools/**"
+      - "scripts/build-ws02-public-tools.mjs"
+      - "scripts/ws02-public-tools-verify.mjs"
+      - "tests/workspace-ws02-public-portal.test.mjs"
+      - ".github/workflows/ws-02-public-tools.yml"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-tools-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run WS-02 portal contract tests
+        run: node --test tests/workspace-ws02-public-portal.test.mjs
+      - name: Build WS-02 public tools bundle
+        run: node scripts/build-ws02-public-tools.mjs
+      - name: Upload WS-02 deployment bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws02-public-one-house-tools
+          path: artifacts/ws02-public-one-house-tools/
+          if-no-files-found: error
+          retention-days: 30
+
+  deployment-observation:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify public WS-02 deployment
+        run: node scripts/ws02-public-tools-verify.mjs
+      - name: Upload WS-02 deployment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws02-public-deployment-report
+          path: artifacts/ws02-public-deployment-report.json
+          if-no-files-found: warn
+          retention-days: 90
