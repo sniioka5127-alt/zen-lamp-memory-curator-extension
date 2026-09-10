@@ -10,6 +10,7 @@ on:
       - "public-tools/**"
       - "scripts/build-ws02-public-tools.mjs"
       - "scripts/ws02-public-tools-verify.mjs"
+      - "scripts/ws03-global-header-verify.mjs"
       - "tests/workspace-ws02-public-portal.test.mjs"
       - "tests/workspace-ws03-global-header.test.mjs"
       - ".github/workflows/ws-02-public-tools.yml"
@@ -43,7 +44,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  deployment-observation:
+  ws02-deployment-observation:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -53,13 +54,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Verify public Tools deployment
+      - name: Verify public WS-02 deployment
         run: node scripts/ws02-public-tools-verify.mjs
-      - name: Upload public deployment report
+      - name: Upload WS-02 deployment report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ws02-public-deployment-report
           path: artifacts/ws02-public-deployment-report.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  ws03-deployment-observation:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify public WS-03 global header deployment
+        run: node scripts/ws03-global-header-verify.mjs
+      - name: Upload WS-03 deployment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws03-global-header-deployment-report
+          path: artifacts/ws03-global-header-deployment-report.json
           if-no-files-found: warn
           retention-days: 90
