@@ -1,15 +1,18 @@
-name: WS-02 Public One House Tools
+name: WS-02 + WS-03 Public One House Tools
 
 on:
   push:
     branches:
       - main
       - ws-02-public-one-house-landing
+      - ws-03-global-header-integration
     paths:
       - "public-tools/**"
       - "scripts/build-ws02-public-tools.mjs"
       - "scripts/ws02-public-tools-verify.mjs"
+      - "scripts/ws03-global-header-verify.mjs"
       - "tests/workspace-ws02-public-portal.test.mjs"
+      - "tests/workspace-ws03-global-header.test.mjs"
       - ".github/workflows/ws-02-public-tools.yml"
   pull_request:
     branches:
@@ -29,19 +32,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Run WS-02 portal contract tests
-        run: node --test tests/workspace-ws02-public-portal.test.mjs
-      - name: Build WS-02 public tools bundle
+      - name: Run public Tools contract tests
+        run: node --test tests/workspace-ws02-public-portal.test.mjs tests/workspace-ws03-global-header.test.mjs
+      - name: Build public Tools bundle
         run: node scripts/build-ws02-public-tools.mjs
-      - name: Upload WS-02 deployment bundle
+      - name: Upload public Tools deployment bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ws02-public-one-house-tools
+          name: ws02-ws03-public-one-house-tools
           path: artifacts/ws02-public-one-house-tools/
           if-no-files-found: error
           retention-days: 30
 
-  deployment-observation:
+  ws02-deployment-observation:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -59,5 +62,26 @@ jobs:
         with:
           name: ws02-public-deployment-report
           path: artifacts/ws02-public-deployment-report.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  ws03-deployment-observation:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify public WS-03 global header deployment
+        run: node scripts/ws03-global-header-verify.mjs
+      - name: Upload WS-03 deployment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ws03-global-header-deployment-report
+          path: artifacts/ws03-global-header-deployment-report.json
           if-no-files-found: warn
           retention-days: 90

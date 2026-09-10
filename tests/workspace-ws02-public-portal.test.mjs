@@ -8,7 +8,7 @@ test("WS-02 exposes exactly four rooms and keeps Human Gate outside the room gri
   const html = read("public-tools/index.html");
   const rooms = [...html.matchAll(/data-room="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(rooms, ["chat-atlas", "memory-curator", "context-bridge", "roundtable-ai"]);
-  assert.match(html, /class="human-gate shell"/);
+  assert.match(html, /class="human-gate shell(?:\s[^"]*)?"/);
   assert.doesNotMatch(html, /data-room="human-gate"/);
 });
 

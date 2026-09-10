@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const sourceRoot = path.join(repoRoot, "public-tools");
 const outRoot = path.join(repoRoot, "artifacts", "ws02-public-one-house-tools");
 
-const files = ["index.html", "tools.css", "tools.js"];
+const files = ["index.html", "tools.css", "global-header.css", "tools.js"];
 
 function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
@@ -18,25 +18,32 @@ async function assertContract() {
   const html = await fsp.readFile(path.join(sourceRoot, "index.html"), "utf8");
   const js = await fsp.readFile(path.join(sourceRoot, "tools.js"), "utf8");
   const css = await fsp.readFile(path.join(sourceRoot, "tools.css"), "utf8");
+  const globalHeaderCss = await fsp.readFile(path.join(sourceRoot, "global-header.css"), "utf8");
 
   const requiredHtml = [
     'data-room="chat-atlas"',
     'data-room="memory-curator"',
     'data-room="context-bridge"',
     'data-room="roundtable-ai"',
+    'data-ws03-global-header',
+    'aria-current="page">Tools',
+    './global-header.css',
     'HUMAN GATE',
     '/tools/chat-atlas/',
     'zen-lamp-memory-curator-extension'
   ];
   for (const marker of requiredHtml) {
-    if (!html.includes(marker)) throw new Error(`WS-02 HTML missing ${marker}`);
+    if (!html.includes(marker)) throw new Error(`Public Tools HTML missing ${marker}`);
   }
 
   if (!js.includes('version: "WS-02"')) throw new Error("WS-02 runtime version marker missing");
   if (/\bfetch\s*\(|XMLHttpRequest|WebSocket|navigator\.sendBeacon/i.test(js)) {
-    throw new Error("WS-02 public portal must not add network transport");
+    throw new Error("Public Tools portal must not add network transport");
   }
   if (!css.includes("@media (max-width: 720px)")) throw new Error("WS-02 responsive mobile breakpoint missing");
+  if (!globalHeaderCss.includes(".global-nav") || !globalHeaderCss.includes("@media (max-width: 560px)")) {
+    throw new Error("WS-03 global header responsive contract missing");
+  }
 }
 
 async function main() {
@@ -55,13 +62,13 @@ async function main() {
 
   const manifest = {
     schema_version: "0.1",
-    deployment: "WS-02 Public One House Landing / Tools Portal",
+    deployment: "WS-02 + WS-03 Public One House Landing / Tools Portal",
     target_url: "https://zen-lamp.com/tools/",
     target_directory_hint: "/public_html/tools/",
     source_repository: "sniioka5127-alt/zen-lamp-memory-curator-extension",
     source_commit: process.env.GITHUB_SHA || "local-build",
     generated_at: new Date().toISOString(),
-    overwrite_policy: "Replace /tools/index.html and add or replace /tools/tools.css and /tools/tools.js. Preserve /tools/chat-atlas/ and every unrelated child directory.",
+    overwrite_policy: "Replace /tools/index.html and add or replace /tools/tools.css, /tools/global-header.css, and /tools/tools.js. Preserve /tools/chat-atlas/ and every unrelated child directory.",
     files: manifestFiles
   };
 
@@ -71,7 +78,7 @@ async function main() {
     "utf8"
   );
 
-  console.log(`WS-02 public tools bundle ready: ${outRoot}`);
+  console.log(`Public tools bundle ready: ${outRoot}`);
   for (const file of manifestFiles) console.log(`${file.sha256}  ${file.path}`);
 }
 
